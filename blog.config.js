@@ -87,17 +87,17 @@ const BLOG = {
     {
       name: '九局下半',
       artist: 'MC HotDog',
-      url: 'https://music.163.com/song?id=135111&userid=132983311',
-      cover: 'https://p2.music.126.net/kn6ugISTonvqJh3LHLaPtQ==/599233837187278.jpg'
+      url: 'https://m8.music.126.net/20230120222438/9bf45b87ad2f61f0689d0179440c496e/ymusic/b64a/554a/901c/85c837bfab60629ee246d125d38dbecc.mp3',
+      cover: 'http://p2.music.126.net/MZUQyESX-DMrrzC5sH9Fxw==/1653665488188665.jpg'
     },
     {
-      name: '王都グランセル',
-      artist: 'Falcom Sound Team jdk',
-      url: 'https://music.163.com/song/media/outer/url?id=731355.mp3',
-      cover: 'https://p1.music.126.net/kn6ugISTonvqJh3LHLaPtQ==/599233837187278.jpg'
+      name: '离开',
+      artist: 'MC HotDog',
+      url: 'https://m7.music.126.net/20230120222614/524f634c9ef969b82f2fafe3b3d1f954/ymusic/7b0e/2e68/f895/eb73cdee6bf3c4b7e8198d82e8e931b1.mp3',
+      cover: 'http://p1.music.126.net/Js-ZQub2-4_RA176YXwm5g==/119846767440816.jpg'
     }
   ],
-  MUSIC_PLAYER_METING: process.env.NEXT_PUBLIC_MUSIC_PLAYER_METING || true, // 是否要开启 MetingJS，从平台获取歌单。会覆盖自定义的 MUSIC_PLAYER_AUDIO_LIST，更多配置信息：https://github.com/metowolf/MetingJS
+  MUSIC_PLAYER_METING: process.env.NEXT_PUBLIC_MUSIC_PLAYER_METING || false, // 是否要开启 MetingJS，从平台获取歌单。会覆盖自定义的 MUSIC_PLAYER_AUDIO_LIST，更多配置信息：https://github.com/metowolf/MetingJS
   MUSIC_PLAYER_METING_SERVER: process.env.NEXT_PUBLIC_MUSIC_PLAYER_METING_SERVER || 'netease', // 音乐平台，[netease, tencent, kugou, xiami, baidu]
   MUSIC_PLAYER_METING_ID: process.env.NEXT_PUBLIC_MUSIC_PLAYER_METING_ID || '7434154120', // 对应歌单的 id
 
