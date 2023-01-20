@@ -87,13 +87,13 @@ const BLOG = {
     {
       name: '九局下半',
       artist: 'MC HotDog',
-      url: 'https://m8.music.126.net/20230120222438/9bf45b87ad2f61f0689d0179440c496e/ymusic/b64a/554a/901c/85c837bfab60629ee246d125d38dbecc.mp3',
+      url: 'http://music.163.com/song/media/outer/url?id=135111.mp3',
       cover: 'http://p2.music.126.net/MZUQyESX-DMrrzC5sH9Fxw==/1653665488188665.jpg'
     },
     {
       name: '离开',
       artist: 'MC HotDog',
-      url: 'https://m7.music.126.net/20230120222614/524f634c9ef969b82f2fafe3b3d1f954/ymusic/7b0e/2e68/f895/eb73cdee6bf3c4b7e8198d82e8e931b1.mp3',
+      url: 'http://music.163.com/song/media/outer/url?id=135028.mp3',
       cover: 'http://p1.music.126.net/Js-ZQub2-4_RA176YXwm5g==/119846767440816.jpg'
     }
   ],
