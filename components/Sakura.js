@@ -1,15 +1,10 @@
 /* eslint-disable */
-/**
- * https://codepen.io/juliangarnier/pen/gmOwJX
- * custom by hexo-theme-yun @YunYouJun
- */
 import React from 'react'
 
 export const Sakura = () => {
   React.useEffect(() => {
     createSakura({})
   }, [])
-  //   return <canvas id="fireworks" className="fireworks"></canvas>
 }
 
 /**
@@ -162,7 +157,7 @@ function createSakura() {
       sakura.draw(cxt)
       sakuraList.push(sakura)
     }
-    stop = requestAnimationFrame(asd())
+    stop = requestAnimationFrame(asd)
     function asd() {
       cxt.clearRect(0, 0, canvas.width, canvas.height)
       sakuraList.update()
