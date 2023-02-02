@@ -39,7 +39,7 @@ function initLive2D() {
     // if (screen.width >= 768) {
     Promise.all([
       // loadExternalResource('https://cdn.zhangxinxu.com/sp/demo/live2d/live2d/js/live2d.js', 'js')
-      loadExternalResource('https://eqcn.ajz.miesnfu.com/wp-content/plugins/wp-3d-pony/live2dw/lib/L2Dwidget.min.js', 'js')
+      loadExternalResource('https://cdn.zhangxinxu.com/sp/demo/live2d/live2d/js/live2d.js', 'js')
     ]).then((e) => {
       // https://github.com/xiazeyu/live2d-widget-models
       loadlive2d('live2d', BLOG.WIDGET_PET_LINK)
