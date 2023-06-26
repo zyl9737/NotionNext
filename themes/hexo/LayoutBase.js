@@ -1,24 +1,28 @@
 import CommonHead from '@/components/CommonHead'
-import { useEffect, useState } from 'react'
-
+import { useCallback, useEffect, useState } from 'react'
+import throttle from 'lodash.throttle'
 import Footer from './components/Footer'
 import JumpToTopButton from './components/JumpToTopButton'
 import SideRight from './components/SideRight'
 import TopNav from './components/TopNav'
-import smoothscroll from 'smoothscroll-polyfill'
 import FloatDarkModeButton from './components/FloatDarkModeButton'
 import Live2D from '@/components/Live2D'
 import LoadingCover from './components/LoadingCover'
 import { useGlobal } from '@/lib/global'
 import BLOG from '@/blog.config'
-import AOS from 'aos'
-import 'aos/dist/aos.css' // You can also use <link> for styles
-import { isBrowser } from '@/lib/utils'
 import dynamic from 'next/dynamic'
+import { isBrowser, loadExternalResource } from '@/lib/utils'
+import CONFIG_HEXO from './config_hexo'
 
 const FacebookPage = dynamic(
   () => {
-    return import('@/components/FacebookPage')
+    let facebook = <></>
+    try {
+      facebook = import('@/components/FacebookPage')
+    } catch (err) {
+      console.error(err)
+    }
+    return facebook
   },
   { ssr: false }
 )
@@ -31,7 +35,7 @@ const FacebookPage = dynamic(
  */
 const LayoutBase = props => {
   const { children, headerSlot, floatSlot, meta, siteInfo } = props
-  const [show, switchShow] = useState(false)
+  const [showFloatButton, switchShow] = useState(false)
   // const [percent, changePercent] = useState(0) // 页面阅读百分比
   const rightAreaSlot = (
     <>
@@ -40,8 +44,8 @@ const LayoutBase = props => {
     </>
   )
   const { onLoading } = useGlobal()
-
-  const scrollListener = () => {
+  const throttleMs = 200
+  const scrollListener = useCallback(throttle(() => {
     const targetRef = document.getElementById('wrapper')
     const clientHeight = targetRef?.clientHeight
     const scrollY = window.pageYOffset
@@ -50,35 +54,30 @@ const LayoutBase = props => {
     if (per > 100) per = 100
     const shouldShow = scrollY > 100 && per > 0
 
-    if (shouldShow !== show) {
+    if (shouldShow !== showFloatButton) {
       switchShow(shouldShow)
     }
-    // changePercent(per)
-  }
+  }, throttleMs))
   useEffect(() => {
-    smoothscroll.polyfill()
     document.addEventListener('scroll', scrollListener)
     return () => document.removeEventListener('scroll', scrollListener)
-  }, [show])
+  }, [])
 
   if (isBrowser()) {
-    AOS.init()
+    loadExternalResource('/css/theme-hexo.css', 'css')
   }
 
   return (
-    <div className="bg-hexo-background-gray dark:bg-black">
+    <div id='theme-hexo'>
       <CommonHead meta={meta} siteInfo={siteInfo}/>
 
       <TopNav {...props} />
 
       {headerSlot}
 
-      <main id="wrapper" className="w-full py-8 md:px-8 lg:px-24 min-h-screen relative">
-        <div
-          id="container-inner"
-          className={(BLOG.LAYOUT_SIDEBAR_REVERSE ? 'flex-row-reverse' : '') + ' pt-14 w-full mx-auto lg:flex lg:space-x-4 justify-center relative z-10'}
-        >
-          <div className="w-full max-w-4xl overflow-x-hidden scroll-hidden">
+      <main id="wrapper" className={`${CONFIG_HEXO.HOME_BANNER_ENABLE ? '' : 'pt-16'} bg-hexo-background-gray dark:bg-black w-full py-8 md:px-8 lg:px-24 min-h-screen relative`}>
+        <div id="container-inner" className={(BLOG.LAYOUT_SIDEBAR_REVERSE ? 'flex-row-reverse' : '') + ' w-full mx-auto lg:flex lg:space-x-4 justify-center relative z-10'} >
+          <div className={'w-full max-w-4xl h-full ' + props.className}>
             {onLoading ? <LoadingCover /> : children}
           </div>
           <SideRight {...props} slot={rightAreaSlot} />
@@ -86,13 +85,8 @@ const LayoutBase = props => {
       </main>
 
       {/* 右下角悬浮 */}
-      <div className="bottom-12 right-1 fixed justify-end z-20  text-white bg-indigo-500 dark:bg-hexo-black-gray rounded-sm">
-        <div
-          className={
-            (show ? 'animate__animated ' : 'hidden') +
-            ' animate__fadeInUp justify-center duration-300  animate__faster flex flex-col items-center cursor-pointer '
-          }
-        >
+      <div className={(showFloatButton ? 'opacity-100 ' : 'invisible opacity-0') + '  duration-300 transition-all bottom-12 right-1 fixed justify-end z-20  text-white bg-indigo-500 dark:bg-hexo-black-gray rounded-sm'}>
+        <div className={'justify-center  flex flex-col items-center cursor-pointer'}>
           <FloatDarkModeButton />
           {floatSlot}
           <JumpToTopButton />

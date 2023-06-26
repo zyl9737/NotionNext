@@ -1,8 +1,7 @@
 import BLOG from '@/blog.config'
 import dynamic from 'next/dynamic'
 import Tabs from '@/components/Tabs'
-import { useGlobal } from '@/lib/global'
-import React from 'react'
+import { useEffect } from 'react'
 import { useRouter } from 'next/router'
 
 const WalineComponent = dynamic(
@@ -44,16 +43,21 @@ const GiscusComponent = dynamic(
   },
   { ssr: false }
 )
+const WebMentionComponent = dynamic(
+  () => {
+    return import('@/components/WebMention')
+  },
+  { ssr: false }
+)
 
 const ValineComponent = dynamic(() => import('@/components/ValineComponent'), {
   ssr: false
 })
 
 const Comment = ({ frontMatter }) => {
-  const { isDarkMode } = useGlobal()
   const router = useRouter()
 
-  React.useEffect(() => {
+  useEffect(() => {
     // 跳转到评论区
     setTimeout(() => {
       if (window.location.href.indexOf('target=comment') > -1) {
@@ -87,7 +91,7 @@ const Comment = ({ frontMatter }) => {
 
         {BLOG.COMMENT_GISCUS_REPO && (
           <div key="Giscus">
-            <GiscusComponent isDarkMode={isDarkMode} className="px-2" />
+            <GiscusComponent className="px-2" />
           </div>
         )}
 
@@ -101,6 +105,10 @@ const Comment = ({ frontMatter }) => {
 
         {BLOG.COMMENT_GITALK_CLIENT_ID && (<div key='GitTalk'>
           <GitalkComponent frontMatter={frontMatter}/>
+        </div>)}
+
+        {BLOG.COMMENT_WEBMENTION.ENABLE && (<div key='WebMention'>
+          <WebMentionComponent frontMatter={frontMatter} className="px-2" />
         </div>)}
       </Tabs>
     </div>

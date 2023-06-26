@@ -1,38 +1,41 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import Prism from 'prismjs'
+// 所有语言的prismjs 使用autoloader引入
+// import 'prismjs/plugins/autoloader/prism-autoloader'
 import 'prismjs/plugins/toolbar/prism-toolbar'
 import 'prismjs/plugins/toolbar/prism-toolbar.min.css'
 import 'prismjs/plugins/show-language/prism-show-language'
 import 'prismjs/plugins/copy-to-clipboard/prism-copy-to-clipboard'
 import 'prismjs/plugins/line-numbers/prism-line-numbers'
 import 'prismjs/plugins/line-numbers/prism-line-numbers.css'
-// 所有语言的prismjs 使用autoloader引入
-import 'prismjs/plugins/autoloader/prism-autoloader'
+
 // mermaid图
 import BLOG from '@/blog.config'
+import { isBrowser, loadExternalResource } from '@/lib/utils'
+import { useRouter } from 'next/router'
 
 /**
  * @author https://github.com/txs/
  * @returns
  */
 const PrismMac = () => {
-  React.useEffect(() => {
-    renderPrismMac()
-    renderMermaid()
-
-    // 折叠代码行号bug
-    const observer = new MutationObserver(mutationsList => {
-      for (const m of mutationsList) {
-        if (m.target.nodeName === 'DETAILS') {
-          const preCodes = m.target.querySelectorAll('pre.notion-code')
-          for (const preCode of preCodes) {
-            Prism.plugins.lineNumbers.resize(preCode)
-          }
-        }
+  const router = useRouter()
+  useEffect(() => {
+    if (isBrowser()) {
+      if (BLOG.CODE_MAC_BAR) {
+        loadExternalResource('/css/prism-mac-style.css', 'css')
       }
-    })
-    observer.observe(document.querySelector('#container'), { attributes: true, subtree: true })
-  }, [])
+      loadExternalResource(BLOG.PRISM_THEME_PATH, 'css')
+      loadExternalResource(BLOG.PRISM_JS_AUTO_LOADER, 'js').then((url) => {
+        // console.log('渲染公式图表')
+        if (window?.Prism?.plugins?.autoloader) {
+          window.Prism.plugins.autoloader.languages_path = BLOG.PRISM_JS_PATH
+        }
+        renderPrismMac()
+        renderMermaid()
+      })
+    }
+  }, [router.events])
   return <></>
 }
 
@@ -40,32 +43,37 @@ const PrismMac = () => {
  * 将mermaid语言 渲染成图片
  */
 const renderMermaid = async() => {
-  //   支持 Mermaid
-  const mermaidPres = document.querySelectorAll('pre.notion-code.language-mermaid')
-  if (mermaidPres) {
-    for (const e of mermaidPres) {
-      const chart = e.querySelector('code').textContent
-      if (chart && !e.querySelector('.mermaid')) {
-        const m = document.createElement('div')
-        m.className = 'mermaid'
-        m.innerHTML = chart
-        e.appendChild(m)
-      }
-    }
-  }
+  const observer = new MutationObserver(async mutationsList => {
+    for (const m of mutationsList) {
+      if (m.target.className === 'notion-code language-mermaid') {
+        const chart = m.target.querySelector('code').textContent
+        if (chart && !m.target.querySelector('.mermaid')) {
+          const mermaidChart = document.createElement('div')
+          mermaidChart.className = 'mermaid'
+          mermaidChart.innerHTML = chart
+          m.target.appendChild(mermaidChart)
+        }
 
-  const mermaidsSvg = document.querySelectorAll('.mermaid')
-  if (mermaidsSvg) {
-    let needLoad = false
-    for (const e of mermaidsSvg) {
-      if (e?.firstChild?.nodeName !== 'svg') {
-        needLoad = true
+        const mermaidsSvg = document.querySelectorAll('.mermaid')
+        if (mermaidsSvg) {
+          let needLoad = false
+          for (const e of mermaidsSvg) {
+            if (e?.firstChild?.nodeName !== 'svg') {
+              needLoad = true
+            }
+          }
+          if (needLoad) {
+            const url = await loadExternalResource(BLOG.MERMAID_CDN, 'js')
+            const mermaid = window.mermaid
+            console.log('mermaid加载成功', url, mermaid)
+            mermaid.contentLoaded()
+          }
+        }
       }
     }
-    if (needLoad) {
-      const asyncMermaid = await import('mermaid')
-      asyncMermaid.default.contentLoaded()
-    }
+  })
+  if (document.querySelector('#container-inner')) {
+    observer.observe(document.querySelector('#container-inner'), { attributes: true, subtree: true })
   }
 }
 
@@ -87,8 +95,6 @@ function renderPrismMac() {
   // 重新渲染之前检查所有的多余text
 
   try {
-    // setup autoloader
-    Prism.plugins.autoloader.languages_path = BLOG.PRISM_JS_PATH
     Prism.highlightAll()
   } catch (err) {
     console.log('代码渲染', err)
@@ -107,6 +113,36 @@ function renderPrismMac() {
       }
     })
   }
+
+  // 折叠代码行号bug
+  if (BLOG.CODE_LINE_NUMBERS === 'true') {
+    fixCodeLineStyle()
+  }
+}
+
+/**
+ * 行号样式在首次渲染或被detail折叠后行高判断错误
+ * 在此手动resize计算
+ */
+const fixCodeLineStyle = () => {
+  const observer = new MutationObserver(mutationsList => {
+    for (const m of mutationsList) {
+      if (m.target.nodeName === 'DETAILS') {
+        const preCodes = m.target.querySelectorAll('pre.notion-code')
+        for (const preCode of preCodes) {
+          Prism.plugins.lineNumbers.resize(preCode)
+        }
+      }
+    }
+  })
+  observer.observe(document.querySelector('#container'), { attributes: true, subtree: true })
+  setTimeout(() => {
+    const preCodes = document.querySelectorAll('pre.notion-code')
+    for (const preCode of preCodes) {
+      console.log('code', preCode)
+      Prism.plugins.lineNumbers.resize(preCode)
+    }
+  }, 10)
 }
 
 export default PrismMac

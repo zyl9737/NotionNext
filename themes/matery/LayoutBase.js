@@ -1,18 +1,18 @@
 import CommonHead from '@/components/CommonHead'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import Footer from './components/Footer'
 import JumpToTopButton from './components/JumpToTopButton'
 import TopNav from './components/TopNav'
-import smoothscroll from 'smoothscroll-polyfill'
 import Live2D from '@/components/Live2D'
 import LoadingCover from './components/LoadingCover'
 import { useGlobal } from '@/lib/global'
 import BLOG from '@/blog.config'
-import AOS from 'aos'
-import 'aos/dist/aos.css' // You can also use <link> for styles
 import FloatDarkModeButton from './components/FloatDarkModeButton'
-import { isBrowser } from '@/lib/utils'
+import throttle from 'lodash.throttle'
+import { isBrowser, loadExternalResource } from '@/lib/utils'
+import SocialButton from './components/SocialButton'
+import CONFIG_MATERY from './config_matery'
 
 /**
  * 基础布局 采用左右两侧布局，移动端使用顶部导航栏
@@ -25,32 +25,26 @@ const LayoutBase = props => {
   const [show, switchShow] = useState(false)
   const { onLoading } = useGlobal()
 
-  const scrollListener = () => {
-    const targetRef = document.getElementById('wrapper')
-    const clientHeight = targetRef?.clientHeight
+  const throttleMs = 200
+  const scrollListener = useCallback(throttle(() => {
     const scrollY = window.pageYOffset
-    const fullHeight = clientHeight - window.outerHeight
-    let per = parseFloat(((scrollY / fullHeight) * 100).toFixed(0))
-    if (per > 100) per = 100
-    const shouldShow = scrollY > 300 && per > 0
-
+    const shouldShow = scrollY > 300
     if (shouldShow !== show) {
       switchShow(shouldShow)
     }
-    // changePercent(per)
-  }
+  }, throttleMs))
+
   useEffect(() => {
-    smoothscroll.polyfill()
     document.addEventListener('scroll', scrollListener)
     return () => document.removeEventListener('scroll', scrollListener)
-  }, [show])
+  }, [])
 
   if (isBrowser()) {
-    AOS.init()
+    loadExternalResource('/css/theme-matery.css', 'css')
   }
 
   return (
-        <div id="outer-wrapper" className="min-h-screen flex flex-col justify-between bg-hexo-background-gray dark:bg-black w-full">
+        <div id='theme-matery' className="min-h-screen flex flex-col justify-between bg-hexo-background-gray dark:bg-black w-full">
 
             <CommonHead meta={meta} siteInfo={siteInfo} />
 
@@ -58,10 +52,16 @@ const LayoutBase = props => {
 
             {headerSlot}
 
-            <main id="wrapper" className="flex-1 w-full py-8 md:px-8 lg:px-24 relative">
+            <main id="wrapper" className={`${CONFIG_MATERY.HOME_BANNER_ENABLE ? '' : 'pt-16'} flex-1 w-full py-8 md:px-8 lg:px-24 relative`}>
+                {/* 嵌入区域 */}
+                               <div id="container-slot" className={`w-full max-w-6xl ${props?.post && ' lg:max-w-3xl 2xl:max-w-4xl '} mt-6 px-3 mx-auto lg:flex lg:space-x-4 justify-center relative z-10`}>
+                   {props.containerSlot}
+                </div>
+
                 <div id="container-inner" className="w-full max-w-6xl mx-auto lg:flex lg:space-x-4 justify-center relative z-10">
                     {onLoading ? <LoadingCover /> : children}
                 </div>
+
             </main>
 
             {/* 左下角悬浮 */}
@@ -69,19 +69,13 @@ const LayoutBase = props => {
                 <Live2D />
             </div>
 
-            <div className="bottom-40 right-2 fixed justify-end z-20">
-                <FloatDarkModeButton />
-            </div>
-
             {/* 右下角悬浮 */}
-            <div className="bottom-12 right-2 fixed justify-end z-20">
-                <div className={
-                    (show ? 'animate__animated ' : 'hidden') +
-                    ' animate__fadeInUp justify-center duration-300  animate__faster flex flex-col items-center cursor-pointer '
-                }
-                >
-                    <JumpToTopButton />
-                </div>
+            <div className="bottom-40 right-2 fixed justify-end space-y-2 z-20">
+                <FloatDarkModeButton />
+                <JumpToTopButton />
+                <SocialButton/>
+                {/* 可扩展的右下角悬浮 */}
+                {props.floatRightBottom}
             </div>
 
             <Footer title={siteInfo?.title || BLOG.TITLE} />

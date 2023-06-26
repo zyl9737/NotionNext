@@ -26,9 +26,9 @@ const CommonScript = () => {
       />
     </>)}
 
-    {/* GoogleAdsense */}
-    {BLOG.ADSENSE_GOOGLE_ID && (<script data-ad-client={BLOG.ADSENSE_GOOGLE_ID} async
-              src='https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js'/>)}
+    {/* GoogleAdsense 本地开发请加入 data-adbreak-test="on" */}
+    {BLOG.ADSENSE_GOOGLE_ID && <script async src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${BLOG.ADSENSE_GOOGLE_ID}`}
+     crossOrigin="anonymous" />}
 
     {BLOG.COMMENT_CUSDIS_APP_ID && <script defer src='https://cusdis.com/js/widget/lang/zh-cn.js' />}
 

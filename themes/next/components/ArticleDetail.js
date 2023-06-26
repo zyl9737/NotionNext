@@ -2,7 +2,7 @@ import BLOG from '@/blog.config'
 import BlogAround from './BlogAround'
 import Comment from '@/components/Comment'
 import RecommendPosts from './RecommendPosts'
-import ShareBar from './ShareBar'
+import ShareBar from '@/components/ShareBar'
 import TagItem from './TagItem'
 import formatDate from '@/lib/formatDate'
 import { useGlobal } from '@/lib/global'
@@ -20,30 +20,29 @@ import NotionIcon from '@/components/NotionIcon'
  * @returns
  */
 export default function ArticleDetail(props) {
-  const { post, recommendPosts, prev, next, showArticleInfo } = props
+  const { post, recommendPosts, prev, next } = props
   const url = BLOG.LINK + useRouter().asPath
   const { locale } = useGlobal()
+  const showArticleInfo = CONFIG_NEXT.ARTICLE_INFO
   const date = formatDate(post?.date?.start_date || post?.createdTime, locale.LOCALE)
 
   return (
-      <div id="container"
-            data-aos="fade-down"
-            data-aos-duration="600"
-            data-aos-easing="ease-in-out"
-            data-aos-once="false"
-            data-aos-anchor-placement="top-bottom"
-
+        <div id="container"
             className="shadow md:hover:shadow-2xl overflow-x-auto flex-grow mx-auto w-screen md:w-full ">
             <div itemScope itemType="https://schema.org/Movie"
+                data-aos="fade-down"
+                data-aos-duration="300"
+                data-aos-once="true"
+                data-aos-anchor-placement="top-bottom"
                 className="subpixel-antialiased overflow-y-hidden py-10 px-5 lg:pt-24 md:px-24  dark:border-gray-700 bg-white dark:bg-hexo-black-gray"
             >
 
-                {showArticleInfo && <header className='animate__slideInDown animate__animated'>
+                {showArticleInfo && <header>
                     {/* 头图 */}
-                    {CONFIG_NEXT.POST_HEADER_IMAGE_VISIBLE && post?.type && !post?.type !== 'Page' && post?.page_cover && (
+                    {CONFIG_NEXT.POST_HEADER_IMAGE_VISIBLE && post?.type && !post?.type !== 'Page' && post?.pageCover && (
                         <div className="w-full relative md:flex-shrink-0 overflow-hidden">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img alt={post.title} src={post?.page_cover} className='object-center w-full' />
+                            <img alt={post.title} src={post?.pageCover} className='object-center w-full' />
                         </div>
                     )}
 
@@ -80,22 +79,15 @@ export default function ArticleDetail(props) {
                 </header>}
 
                 {/* Notion内容主体 */}
-                <article id='notion-article' className='px-1'>
+                <article id='notion-article' className='px-1 max-w-3xl mx-auto'>
                     {post && (<NotionPage post={post} />)}
                 </article>
 
-                <section className="px-1 py-2 my-1 text-sm font-light overflow-auto text-gray-600  dark:text-gray-400">
-                    {/* 文章内嵌广告 */}
-                    <ins className="adsbygoogle"
-                        style={{ display: 'block', textAlign: 'center' }}
-                        data-adtest="on"
-                        data-ad-layout="in-article"
-                        data-ad-format="fluid"
-                        data-ad-client="ca-pub-2708419466378217"
-                        data-ad-slot="3806269138" />
-                </section>
-
                 {showArticleInfo && <>
+
+                    {/* 分享 */}
+                    <ShareBar post={post} />
+
                     {/* 版权声明 */}
                     {post.type === 'Post' && <ArticleCopyright author={BLOG.AUTHOR} url={url} />}
 
@@ -126,7 +118,6 @@ export default function ArticleDetail(props) {
                                         ))}
                                     </div>
                                 )}
-                                <ShareBar post={post} />
                             </>
                         )}
                     </section>

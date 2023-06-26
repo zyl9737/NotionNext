@@ -1,12 +1,17 @@
 import { getGlobalNotionData } from '@/lib/notion/getNotionData'
 import { useGlobal } from '@/lib/global'
 import { getDataFromCache } from '@/lib/cache/cache_manager'
-import * as ThemeMap from '@/themes'
 import BLOG from '@/blog.config'
+import { useRouter } from 'next/router'
+import { getLayoutByTheme } from '@/themes/theme'
 
 const Index = props => {
   const { keyword, siteInfo } = props
   const { locale } = useGlobal()
+
+  // 根据页面路径加载不同Layout文件
+  const Layout = getLayoutByTheme(useRouter())
+
   const meta = {
     title: `${keyword || ''}${keyword ? ' | ' : ''}${locale.NAV.SEARCH} | ${siteInfo?.title}`,
     description: siteInfo?.title,
@@ -14,15 +19,10 @@ const Index = props => {
     slug: 'search/' + (keyword || ''),
     type: 'website'
   }
-  const { theme } = useGlobal()
-  const ThemeComponents = ThemeMap[theme]
-  return (
-    <ThemeComponents.LayoutSearch
-      {...props}
-      meta={meta}
-      currentSearch={keyword}
-    />
-  )
+
+  props = { ...props, meta }
+
+  return <Layout {...props} />
 }
 
 /**
@@ -122,7 +122,8 @@ async function filterByMemCache(allPosts, keyword) {
     const articleInfo = post.title + post.summary + tagContent + categoryContent
     let hit = articleInfo.toLowerCase().indexOf(keyword) > -1
     let indexContent = [post.summary]
-    if (page && page.block) {
+    // 防止搜到加密文章的内容
+    if (page && page.block && !post.password) {
       const contentIds = Object.keys(page.block)
       contentIds.forEach(id => {
         const properties = page?.block[id]?.value?.properties
