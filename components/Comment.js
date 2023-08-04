@@ -54,10 +54,22 @@ const ValineComponent = dynamic(() => import('@/components/ValineComponent'), {
   ssr: false
 })
 
-const Comment = ({ frontMatter }) => {
+/**
+ * 是否有评论
+ */
+export const commentEnable = BLOG.COMMENT_TWIKOO_ENV_ID || BLOG.COMMENT_WALINE_SERVER_URL || BLOG.COMMENT_VALINE_APP_ID ||
+BLOG.COMMENT_GISCUS_REPO || BLOG.COMMENT_CUSDIS_APP_ID || BLOG.COMMENT_UTTERRANCES_REPO ||
+ BLOG.COMMENT_GITALK_CLIENT_ID || BLOG.COMMENT_WEBMENTION.ENABLE
+
+/**
+ * 评论组件
+ * @param {*} param0
+ * @returns
+ */
+const Comment = ({ frontMatter, className }) => {
   const router = useRouter()
 
-  if (isBrowser() && ('giscus' in router.query || router.query.target === 'comment')) {
+  if (isBrowser && ('giscus' in router.query || router.query.target === 'comment')) {
     setTimeout(() => {
       const url = router.asPath.replace('?target=comment', '')
       history.replaceState({}, '', url)
@@ -70,7 +82,7 @@ const Comment = ({ frontMatter }) => {
   }
 
   return (
-    <div id='comment' className='comment mt-5 text-gray-800 dark:text-gray-300'>
+    <div key={frontMatter?.id} id='comment' className={`comment mt-5 text-gray-800 dark:text-gray-300 ${className || ''}`}>
         <Tabs>
 
             {BLOG.COMMENT_TWIKOO_ENV_ID && (<div key='Twikoo'>
