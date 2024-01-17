@@ -1,5 +1,6 @@
 import { siteConfig } from '@/lib/config'
 import dynamic from 'next/dynamic'
+import LA51 from './LA51'
 import WebWhiz from './Webwhiz'
 
 const TwikooCommentCounter = dynamic(() => import('@/components/TwikooCommentCounter'), { ssr: false })
@@ -11,6 +12,7 @@ const FlutteringRibbon = dynamic(() => import('@/components/FlutteringRibbon'), 
 const Ribbon = dynamic(() => import('@/components/Ribbon'), { ssr: false })
 const Sakura = dynamic(() => import('@/components/Sakura'), { ssr: false })
 const StarrySky = dynamic(() => import('@/components/StarrySky'), { ssr: false })
+const DifyChatbot = dynamic(() => import('@/components/DifyChatbot'), { ssr: false });
 const Analytics = dynamic(() => import('@vercel/analytics/react').then(async (m) => { return m.Analytics }), { ssr: false })
 const MusicPlayer = dynamic(() => import('@/components/Player'), { ssr: false })
 const Ackee = dynamic(() => import('@/components/Ackee'), { ssr: false })
@@ -66,6 +68,9 @@ const ExternalPlugin = (props) => {
   const ANALYTICS_GOOGLE_ID = siteConfig('ANALYTICS_GOOGLE_ID')
   const MATOMO_HOST_URL = siteConfig('MATOMO_HOST_URL')
   const MATOMO_SITE_ID = siteConfig('MATOMO_SITE_ID')
+  const ANALYTICS_51LA_ID = siteConfig('ANALYTICS_51LA_ID')
+  const ANALYTICS_51LA_CK = siteConfig('ANALYTICS_51LA_CK')
+  const DIFY_CHATBOT_ENABLED = siteConfig('DIFY_CHATBOT_ENABLED')
 
   if (DISABLE_PLUGIN) {
     return null
@@ -88,6 +93,7 @@ const ExternalPlugin = (props) => {
         {FLUTTERINGRIBBON && <FlutteringRibbon />}
         {COMMENT_TWIKOO_COUNT_ENABLE && <TwikooCommentCounter {...props} />}
         {RIBBON && <Ribbon />}
+        {DIFY_CHATBOT_ENABLED && <DifyChatbot />}
         {CUSTOM_RIGHT_CLICK_CONTEXT_MENU && <CustomContextMenu {...props} />}
         {!CAN_COPY && <DisableCopy />}
         {WEB_WHIZ_ENABLED && <WebWhiz />}
@@ -95,6 +101,16 @@ const ExternalPlugin = (props) => {
         <VConsole />
         <LoadingProgress />
         <AosAnimation />
+        {ANALYTICS_51LA_ID && ANALYTICS_51LA_CK && <LA51/>}
+
+        {ANALYTICS_51LA_ID && ANALYTICS_51LA_CK && (<>
+            <script id="LA_COLLECT" src="//sdk.51.la/js-sdk-pro.min.js" defer/>
+            {/* <script async dangerouslySetInnerHTML={{
+              __html: `
+                    LA.init({id:"${ANALYTICS_51LA_ID}",ck:"${ANALYTICS_51LA_CK}",hashMode:true,autoTrack:true})
+                    `
+            }} /> */}
+        </>)}
 
         {CHATBASE_ID && (<>
             <script id={CHATBASE_ID} src="https://www.chatbase.co/embed.min.js" defer />
@@ -126,7 +142,7 @@ const ExternalPlugin = (props) => {
             />
         </>)}
 
-        {AD_WWADS_ID && <script type="text/javascript" charSet="UTF-8" src="https://cdn.wwads.cn/js/makemoney.js" async></script>}
+        {AD_WWADS_ID && <script type="text/javascript" src="https://cdn.wwads.cn/js/makemoney.js" async></script>}
 
         {COMMENT_TWIKOO_ENV_ID && <script defer src={COMMENT_TWIKOO_CDN_URL} />}
 
