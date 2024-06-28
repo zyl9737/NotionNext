@@ -5,13 +5,13 @@
  * @returns
  */
 const Style = () => {
-  return <style jsx global>{`
-
-    // 底色
-    body{
-        background-color: #f0f8ff
-    }
-    .dark body{
+  return (
+    <style jsx global>{`
+      // 底色
+      body {
+        background-color: #eeedee;
+      }
+      .dark body {
         background-color: black;
       }
 
@@ -29,6 +29,7 @@ const Style = () => {
         color: #4e80ee;
       }
     `}</style>
+  )
 }
 
 export { Style }
