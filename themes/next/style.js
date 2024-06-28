@@ -29,7 +29,6 @@ const Style = () => {
         color: #4e80ee;
       }
     `}</style>
-  )
 }
 
 export { Style }
