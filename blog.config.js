@@ -24,7 +24,7 @@ const BLOG = {
 
   AUTHOR: process.env.NEXT_PUBLIC_AUTHOR || 'Icemoon', // 您的昵称 例如 Icemoon
   BIO: process.env.NEXT_PUBLIC_BIO || '进一寸有进一寸的欢喜', // 作者简介
-  LINK: process.env.NEXT_PUBLIC_LINK || 'https:/yulong.buzz', // 网站地址
+  LINK: process.env.NEXT_PUBLIC_LINK || 'https://zhengyulong.top', // 网站地址
   KEYWORDS: process.env.NEXT_PUBLIC_KEYWORD || 'Notion, 博客', // 网站关键词 英文逗号隔开
 
   // 社交链接，不需要可留空白，例如 CONTACT_WEIBO:''
