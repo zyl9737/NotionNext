@@ -20,6 +20,7 @@ const OpenWrite = () => {
     'OPEN_WRITE_BTN_TEXT',
     '原创不易，完成人机检测，阅读全文'
   )
+  const displayPercentage = 0.7
   // 验证一次后的有效时长，单位小时
   const cookieAge = siteConfig('OPEN_WRITE_VALIDITY_DURATION', 1)
   // 白名单
@@ -46,7 +47,8 @@ const OpenWrite = () => {
           btnText,
           keyword,
           blogId,
-          cookieAge
+          cookieAge,
+          displayPercentage
         })
 
         // btw初始化后，开始监听read-more-wrap何时消失
