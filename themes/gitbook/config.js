@@ -8,14 +8,14 @@ const CONFIG = {
 
   // 菜单
   GITBOOK_MENU_CATEGORY: true, // 显示分类
-  GITBOOK_BOOK_MENU_TAG: true, // 显示标签
+  GITBOOK_BOOK_MENU_TAG: false, // 显示标签
   GITBOOK_MENU_ARCHIVE: true, // 显示归档
   GITBOOK_MENU_SEARCH: false, // 显示搜索
 
   // 导航文章自动排他折叠
   GITBOOK_EXCLUSIVE_COLLAPSE: true, // 一次只展开一个分类，其它文件夹自动关闭。
 
-  GITBOOK_FOLDER_HOVER_EXPAND: false, // 左侧导航文件夹鼠标悬停时自动展开；若为false，则要点击才能展开
+  GITBOOK_FOLDER_HOVER_EXPAND: true, // 左侧导航文件夹鼠标悬停时自动展开；若为false，则要点击才能展开
 
   // Widget
   GITBOOK_WIDGET_REVOLVER_MAPS:
