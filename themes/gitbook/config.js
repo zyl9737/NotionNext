@@ -10,7 +10,7 @@ const CONFIG = {
   GITBOOK_MENU_CATEGORY: true, // 显示分类
   GITBOOK_BOOK_MENU_TAG: true, // 显示标签
   GITBOOK_MENU_ARCHIVE: true, // 显示归档
-  GITBOOK_MENU_SEARCH: true, // 显示搜索
+  GITBOOK_MENU_SEARCH: false, // 显示搜索
 
   // 导航文章自动排他折叠
   GITBOOK_EXCLUSIVE_COLLAPSE: true, // 一次只展开一个分类，其它文件夹自动关闭。
