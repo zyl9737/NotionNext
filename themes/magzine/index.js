@@ -6,6 +6,8 @@ import replaceSearchResult from '@/components/Mark'
 import NotionPage from '@/components/NotionPage'
 import ShareBar from '@/components/ShareBar'
 import WWAds from '@/components/WWAds'
+import DashboardBody from '@/components/ui/dashboard/DashboardBody'
+import DashboardHeader from '@/components/ui/dashboard/DashboardHeader'
 import { siteConfig } from '@/lib/config'
 import { useGlobal } from '@/lib/global'
 import { isBrowser } from '@/lib/utils'
@@ -59,7 +61,7 @@ const LayoutBase = props => {
       <Style />
 
       <div
-        id='theme-medium'
+        id='theme-magzine'
         className={`${siteConfig('FONT_STYLE')} bg-white dark:bg-hexo-black-gray w-full h-full min-h-screen justify-center dark:text-gray-300 scroll-smooth`}>
         <main
           id='wrapper'
@@ -155,7 +157,9 @@ const LayoutSlug = props => {
       setTimeout(
         () => {
           if (isBrowser) {
-            const article = document.getElementById('notion-article')
+            const article = document.querySelector(
+              '#article-wrapper #notion-article'
+            )
             if (!article) {
               router.push('/404').then(() => {
                 console.warn('找不到页面', router.asPath)
@@ -177,7 +181,7 @@ const LayoutSlug = props => {
         {/* 文章锁 */}
         {lock && <ArticleLock validPassword={validPassword} />}
 
-        {!lock && (
+        {!lock && post && (
           <div className='w-full max-w-screen-3xl mx-auto'>
             {/* 文章信息 */}
             <ArticleInfo {...props} />
@@ -276,10 +280,12 @@ const LayoutSlug = props => {
         {/* 广告醒图 */}
         <BannerFullWidth />
         {/* 推荐关联文章 */}
-        <PostSimpleListHorizontal
-          title={locale.COMMON.RELATE_POSTS}
-          posts={recommendPosts}
-        />
+        {recommendPosts && recommendPosts.length > 0 && (
+          <PostSimpleListHorizontal
+            title={locale.COMMON.RELATE_POSTS}
+            posts={recommendPosts}
+          />
+        )}
       </div>
     </>
   )
@@ -493,11 +499,39 @@ const LayoutSignUp = props => {
   )
 }
 
+/**
+ * 仪表盘
+ * @param {*} props
+ * @returns
+ */
+const LayoutDashboard = props => {
+  const { post } = props
+
+  return (
+    <>
+      <div className='container grow'>
+        <div className='flex flex-wrap justify-center -mx-4'>
+          <div id='container-inner' className='w-full p-4'>
+            {post && (
+              <div id='article-wrapper' className='mx-auto'>
+                <NotionPage {...props} />
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+      {/* 仪表盘 */}
+      <DashboardHeader />
+      <DashboardBody />
+    </>
+  )
+}
 export {
   Layout404,
   LayoutArchive,
   LayoutBase,
   LayoutCategoryIndex,
+  LayoutDashboard,
   LayoutIndex,
   LayoutPostList,
   LayoutSearch,
