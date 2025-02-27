@@ -524,6 +524,9 @@ const BLOG = {
     process.env.NEXT_PUBLIC_ANIMATE_CSS_URL ||
     'https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css', // 动画CDN
 
+  // uuid重定向至 slug
+  UUID_REDIRECT: process.env.UUID_REDIRECT || false,
+  
   // 网站图片
   IMG_LAZY_LOAD_PLACEHOLDER:
     process.env.NEXT_PUBLIC_IMG_LAZY_LOAD_PLACEHOLDER ||
