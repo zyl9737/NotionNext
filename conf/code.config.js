@@ -4,6 +4,8 @@
 module.exports = {
   // START********代码相关********
   // PrismJs 代码相关
+  // START********代码相关********
+  // PrismJs 代码相关
   PRISM_JS_PATH: 'https://npm.elemecdn.com/prismjs@1.29.0/components/',
   PRISM_JS_AUTO_LOADER:
     'https://npm.elemecdn.com/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js',
@@ -28,7 +30,11 @@ module.exports = {
   // Mermaid 图表CDN
   MERMAID_CDN:
     process.env.NEXT_PUBLIC_MERMAID_CDN ||
-    'https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.2.4/mermaid.min.js' // CDN
+    'https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.2.4/mermaid.min.js',// CDN
+  // QRCodeCDN
+  QR_CODE_CDN:
+  process.env.NEXT_PUBLIC_QR_CODE_CDN ||
+  'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js',
 
   // END********代码相关********
 }
