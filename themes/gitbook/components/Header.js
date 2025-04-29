@@ -3,7 +3,7 @@ import DarkModeButton from '@/components/DarkModeButton'
 import { siteConfig } from '@/lib/config'
 import { useGlobal } from '@/lib/global'
 import { SignInButton, SignedOut, UserButton } from '@clerk/nextjs'
-import { useRef, useState } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import CONFIG from '../config'
 import LogoBar from './LogoBar'
 import { MenuBarMobile } from './MenuBarMobile'
@@ -18,9 +18,26 @@ import SearchInput from './SearchInput'
 export default function Header(props) {
   const { className, customNav, customMenu } = props
   const [isOpen, changeShow] = useState(false)
+  const [scrolled, setScrolled] = useState(false)
   const collapseRef = useRef(null)
 
   const { locale } = useGlobal()
+
+  // 监听页面滚动，用于添加滚动效果
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 10) {
+        setScrolled(true)
+      } else {
+        setScrolled(false)
+      }
+    }
+    
+    window.addEventListener('scroll', handleScroll)
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+    }
+  }, [])
 
   const defaultLinks = [
     {
@@ -65,7 +82,9 @@ export default function Header(props) {
   return (
     <div id='top-nav' className={'fixed top-0 w-full z-20 ' + className}>
       {/* PC端菜单 */}
-      <div className='flex justify-center border-b dark:border-black items-center w-full h-16 bg-white dark:bg-hexo-black-gray'>
+      <div className={`flex justify-center border-b dark:border-black items-center w-full h-16 
+        bg-white dark:bg-hexo-black-gray transition-all duration-300 
+        ${scrolled ? 'shadow-md dark:shadow-gray-800' : ''}`}>
         <div className='px-5 max-w-screen-4xl w-full flex gap-x-3 justify-between items-center'>
           {/* 左侧*/}
           <div className='flex'>
@@ -87,7 +106,7 @@ export default function Header(props) {
               <>
                 <SignedOut>
                   <SignInButton mode='modal'>
-                    <button className='bg-green-500 hover:bg-green-600 text-white rounded-lg px-3 py-2'>
+                    <button className='bg-blue-500 hover:bg-blue-600 text-white rounded-lg px-3 py-2 transition-colors duration-200 shadow-sm hover:shadow'>
                       {locale.COMMON.SIGN_IN}
                     </button>
                   </SignInButton>
@@ -98,7 +117,7 @@ export default function Header(props) {
             <DarkModeButton className='text-sm items-center h-full hidden md:flex' />
             <SearchInput className='hidden md:flex md:w-52 lg:w-72' />
             {/* 折叠按钮、仅移动端显示 */}
-            <div className='mr-1 flex md:hidden justify-end items-center space-x-4  dark:text-gray-200'>
+            <div className='mr-1 flex md:hidden justify-end items-center space-x-4 dark:text-gray-200'>
               <DarkModeButton className='flex text-md items-center h-full' />
               <div
                 onClick={toggleMenuOpen}
@@ -120,7 +139,7 @@ export default function Header(props) {
         collapseRef={collapseRef}
         isOpen={isOpen}
         className='md:hidden'>
-        <div className='bg-white dark:bg-hexo-black-gray pt-1 py-2 lg:hidden '>
+        <div className='bg-white dark:bg-hexo-black-gray pt-1 py-2 lg:hidden shadow-lg'>
           <MenuBarMobile
             {...props}
             onHeightChange={param =>

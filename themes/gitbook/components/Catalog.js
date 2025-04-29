@@ -1,4 +1,5 @@
 import { isBrowser } from '@/lib/utils'
+import { useGlobal } from '@/lib/global'
 import throttle from 'lodash.throttle'
 import { uuidToId } from 'notion-utils'
 import { useCallback, useEffect, useState } from 'react'
@@ -11,8 +12,10 @@ import { useCallback, useEffect, useState } from 'react'
  */
 const Catalog = ({ post }) => {
   const toc = post?.toc
+  const { locale } = useGlobal()
   // 同步选中目录事件
   const [activeSection, setActiveSection] = useState(null)
+  const [showCatalog, setShowCatalog] = useState(true)
 
   // 监听滚动事件
   useEffect(() => {
@@ -64,40 +67,53 @@ const Catalog = ({ post }) => {
   if (!toc || toc?.length < 1) {
     return <></>
   }
+  
+  const toggleCatalog = () => {
+    setShowCatalog(!showCatalog)
+  }
 
   return (
-    <>
-      {/* <div className='w-full hidden md:block'>
-        <i className='mr-1 fas fa-stream' />{locale.COMMON.TABLE_OF_CONTENTS}
-        </div> */}
-
-      <div
-        id='toc-wrapper'
-        className='toc-wrapper overflow-y-auto my-2 max-h-80 overscroll-none scroll-hidden'>
-        <nav className='h-full text-black'>
-          {toc?.map(tocItem => {
-            const id = uuidToId(tocItem.id)
-            return (
-              <a
-                key={id}
-                href={`#${id}`}
-                //  notion-table-of-contents-item
-                className={`${activeSection === id && 'border-green-500 text-green-500 font-bold'} border-l pl-4 block hover:text-green-500 border-lduration-300 transform font-light dark:text-gray-300
-              notion-table-of-contents-item-indent-level-${tocItem.indentLevel} catalog-item `}>
-                <span
-                  style={{
-                    display: 'inline-block',
-                    marginLeft: tocItem.indentLevel * 16
-                  }}
-                  className={`truncate`}>
-                  {tocItem.text}
-                </span>
-              </a>
-            )
-          })}
-        </nav>
+    <div className="catalog-container bg-white dark:bg-gray-800 rounded-lg shadow-sm p-3 mb-5 border dark:border-gray-700">
+      <div className="flex justify-between items-center cursor-pointer" onClick={toggleCatalog}>
+        <div className="text-lg font-medium flex items-center text-gray-700 dark:text-gray-300">
+          <i className="mr-2 fas fa-list-ul text-green-500 dark:text-green-400" />
+          {locale.COMMON.TABLE_OF_CONTENTS}
+        </div>
+        <div className="text-gray-400 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-400 transition-colors duration-200">
+          <i className={`fas ${showCatalog ? 'fa-chevron-up' : 'fa-chevron-down'} text-sm`} />
+        </div>
       </div>
-    </>
+
+      {showCatalog && (
+        <div
+          id='toc-wrapper'
+          className='toc-wrapper overflow-y-auto my-2 max-h-80 overscroll-none scroll-hidden transition-all duration-500'
+          style={{ maxHeight: showCatalog ? '20rem' : '0' }}>
+          <nav className='h-full text-black'>
+            {toc?.map(tocItem => {
+              const id = uuidToId(tocItem.id)
+              return (
+                <a
+                  key={id}
+                  href={`#${id}`}
+                  className={`${activeSection === id 
+                    ? 'border-green-500 text-green-600 dark:text-green-400 font-medium bg-green-50 dark:bg-opacity-10 rounded' 
+                    : 'border-gray-200 dark:border-gray-700'
+                  } border-l-2 pl-4 block hover:text-green-600 dark:hover:text-green-400 duration-300 py-1 my-1 transition-colors truncate`}>
+                  <span
+                    style={{
+                      display: 'inline-block',
+                      marginLeft: tocItem.indentLevel * 16
+                    }}>
+                    {tocItem.text}
+                  </span>
+                </a>
+              )
+            })}
+          </nav>
+        </div>
+      )}
+    </div>
   )
 }
 
