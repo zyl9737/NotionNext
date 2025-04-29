@@ -30,7 +30,7 @@ module.exports = {
   // Mermaid 图表CDN
   MERMAID_CDN:
     process.env.NEXT_PUBLIC_MERMAID_CDN ||
-    'https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.2.4/mermaid.min.js',// CDN
+    'https://cdnjs.cloudflare.com/ajax/libs/mermaid/11.4.0/mermaid.min.js',// CDN
   // QRCodeCDN
   QR_CODE_CDN:
   process.env.NEXT_PUBLIC_QR_CODE_CDN ||
