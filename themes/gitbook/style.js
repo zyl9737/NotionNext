@@ -48,30 +48,6 @@ const Style = () => {
         transition: border-color 0.3s ease;
       }
       
-      .dark #theme-gitbook h1 {
-        border-bottom-color: #333;
-      }
-      
-      /* 链接和按钮样式 */
-      #theme-gitbook a:not(.notion-link) {
-        color: #0070f3;
-        transition: color 0.2s ease, text-decoration 0.2s ease;
-        text-decoration: none;
-      }
-      
-      #theme-gitbook a:hover:not(.notion-link) {
-        color: #0050d0;
-        text-decoration: underline;
-      }
-      
-      .dark #theme-gitbook a:not(.notion-link) {
-        color: #3291ff;
-      }
-      
-      .dark #theme-gitbook a:hover:not(.notion-link) {
-        color: #65b0ff;
-      }
-      
       /* 导航菜单美化 */
       #theme-gitbook .sticky {
         transition: all 0.3s ease;

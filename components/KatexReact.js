@@ -47,11 +47,27 @@ const TeX = ({
     return state.errorElement
   }
 
+  // 添加蓝色样式类
+  const blueFormulaClass = 'notion-blue-formula'
+
   return (
-    <Component
-      {...props}
-      dangerouslySetInnerHTML={{ __html: state.innerHtml }}
-    />
+    <>
+      {/* 添加全局样式 */}
+      <style jsx global>{`
+        .notion-blue-formula .katex {
+          color: #0366d6 !important;
+        }
+        .dark .notion-blue-formula .katex {
+          color: #58a6ff !important;
+        }
+      `}</style>
+      
+      <Component
+        {...props}
+        className={`${props.className || ''} ${blueFormulaClass}`}
+        dangerouslySetInnerHTML={{ __html: state.innerHtml }}
+      />
+    </>
   )
 }
 
