@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import Prism from 'prismjs'
 // 所有语言的prismjs 使用autoloader引入
 // import 'prismjs/plugins/autoloader/prism-autoloader'
@@ -37,39 +37,126 @@ const PrismMac = () => {
 
   const codeCollapse = siteConfig('CODE_COLLAPSE')
   const codeCollapseExpandDefault = siteConfig('CODE_COLLAPSE_EXPAND_DEFAULT')
+  
+  // 使用 useRef 跟踪初始化状态，避免多次执行
+  const initialized = useRef(false)
+  const renderAttempts = useRef(0)
+  const maxRenderAttempts = 5 // 最大尝试次数
 
   useEffect(() => {
-    if (codeMacBar) {
-      loadExternalResource('/css/prism-mac-style.css', 'css').then(() => {
+    // 主要的初始化逻辑
+    const initializePrism = async () => {
+      if (initialized.current) return
+      
+      try {
+        // 1. 首先加载样式文件
+        if (codeMacBar) {
+          await loadExternalResource('/css/prism-mac-style.css', 'css')
+        }
+        
+        // 2. 加载 Prism 主题样式
+        await loadPrismThemeCSS(
+          isDarkMode,
+          prismThemeSwitch,
+          prismThemeDarkPath,
+          prismThemeLightPath,
+          prismThemePrefixPath
+        )
+        
+        // 3. 加载 PrismJS 自动加载器
+        if (prismjsAutoLoader) {
+          await loadExternalResource(prismjsAutoLoader, 'js')
+          if (window?.Prism?.plugins?.autoloader) {
+            window.Prism.plugins.autoloader.languages_path = prismjsPath
+          }
+        }
+        
+        // 等待 DOM 元素准备好
+        checkAndRenderWhenReady()
+      } catch (error) {
+        console.error('PrismMac 初始化失败:', error)
+      }
+    }
+
+    // 检查 DOM 元素是否准备好并尝试渲染
+    const checkAndRenderWhenReady = () => {
+      const container = document?.getElementById('notion-article')
+      const codeBlocks = container?.getElementsByTagName('pre')
+      
+      if (container && codeBlocks && codeBlocks.length > 0) {
+        // DOM 已准备好，可以渲染
+        renderAllCodeBlocks()
+        initialized.current = true
+      } else if (renderAttempts.current < maxRenderAttempts) {
+        // DOM 还没准备好，延迟重试
+        renderAttempts.current += 1
+        setTimeout(checkAndRenderWhenReady, 300)
+      }
+    }
+    
+    // 渲染所有代码块
+    const renderAllCodeBlocks = () => {
+      // 按顺序执行渲染操作
+      setTimeout(() => {
+        renderPrismMac(codeLineNumbers)
+        renderMermaid(mermaidCDN)
+        renderCollapseCode(codeCollapse, codeCollapseExpandDefault)
+        
+        // 再次运行以确保所有效果都应用
         setTimeout(() => {
           renderPrismMac(codeLineNumbers)
         }, 300)
+      }, 100)
+    }
+    
+    // 启动初始化过程
+    initializePrism()
+    
+    // 当路由或暗黑模式状态变化时重新初始化
+    return () => {
+      initialized.current = false
+      renderAttempts.current = 0
+    }
+  }, [router, isDarkMode])
+
+  // 监听 DOM 变化，处理动态加载的内容
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    
+    // 监视 notion-article 元素的变化
+    const observer = new MutationObserver((mutations) => {
+      // 检测是否有新的代码块被添加
+      const hasNewCodeBlocks = mutations.some(mutation => {
+        return Array.from(mutation.addedNodes).some(node => {
+          if (node.nodeType === 1) { // Element node
+            return node.tagName === 'PRE' || 
+                  node.querySelector('pre') ||
+                  node.classList?.contains('notion-code')
+          }
+          return false
+        })
+      })
+      
+      // 如果有新的代码块，重新渲染
+      if (hasNewCodeBlocks) {
+        renderPrismMac(codeLineNumbers)
+        renderCollapseCode(codeCollapse, codeCollapseExpandDefault)
+      }
+    })
+    
+    // 开始监视变化
+    const articleElement = document.getElementById('notion-article')
+    if (articleElement) {
+      observer.observe(articleElement, { 
+        childList: true, 
+        subtree: true 
       })
     }
-    // 加载prism样式
-    loadPrismThemeCSS(
-      isDarkMode,
-      prismThemeSwitch,
-      prismThemeDarkPath,
-      prismThemeLightPath,
-      prismThemePrefixPath
-    )
-    // 折叠代码
-    loadExternalResource(prismjsAutoLoader, 'js').then(url => {
-      if (window?.Prism?.plugins?.autoloader) {
-        window.Prism.plugins.autoloader.languages_path = prismjsPath
-      }
-
-      renderPrismMac(codeLineNumbers)
-      renderMermaid(mermaidCDN)
-      renderCollapseCode(codeCollapse, codeCollapseExpandDefault)
-      
-      // 添加延迟执行确保样式和代码高亮都能正确应用
-      setTimeout(() => {
-        renderPrismMac(codeLineNumbers)
-      }, 500)
-    })
-  }, [router, isDarkMode])
+    
+    return () => {
+      observer.disconnect()
+    }
+  }, [])
 
   return <></>
 }
@@ -77,7 +164,7 @@ const PrismMac = () => {
 /**
  * 加载Prism主题样式
  */
-const loadPrismThemeCSS = (
+const loadPrismThemeCSS = async (
   isDarkMode,
   prismThemeSwitch,
   prismThemeDarkPath,
@@ -104,9 +191,9 @@ const loadPrismThemeCSS = (
     ) {
       previousTheme.parentNode.removeChild(previousTheme)
     }
-    loadExternalResource(PRISM_THEME, 'css')
+    await loadExternalResource(PRISM_THEME, 'css')
   } else {
-    loadExternalResource(prismThemePrefixPath, 'css')
+    await loadExternalResource(prismThemePrefixPath, 'css')
   }
 }
 
@@ -117,7 +204,10 @@ const renderCollapseCode = (codeCollapse, codeCollapseExpandDefault) => {
   if (!codeCollapse) {
     return
   }
+  
   const codeBlocks = document.querySelectorAll('.code-toolbar')
+  if (!codeBlocks || codeBlocks.length === 0) return
+  
   for (const codeBlock of codeBlocks) {
     // 判断当前元素是否被包裹
     if (codeBlock.closest('.collapse-wrapper')) {
@@ -125,7 +215,10 @@ const renderCollapseCode = (codeCollapse, codeCollapseExpandDefault) => {
     }
 
     const code = codeBlock.querySelector('code')
-    const language = code.getAttribute('class').match(/language-(\w+)/)[1]
+    if (!code) continue
+    
+    const languageMatch = code.getAttribute('class')?.match(/language-(\w+)/)
+    const language = languageMatch ? languageMatch[1] : '代码'
 
     const collapseWrapper = document.createElement('div')
     collapseWrapper.className = 'collapse-wrapper w-full py-2'
@@ -161,7 +254,7 @@ const renderCollapseCode = (codeCollapse, codeCollapseExpandDefault) => {
     header.addEventListener('click', collapseCode)
     // 是否自动展开
     if (codeCollapseExpandDefault) {
-      header.click()
+      setTimeout(() => header.click(), 0)
     }
   }
 }
@@ -170,51 +263,75 @@ const renderCollapseCode = (codeCollapse, codeCollapseExpandDefault) => {
  * 将mermaid语言 渲染成图片
  */
 const renderMermaid = async(mermaidCDN) => {
+  if (!document.querySelector('#notion-article')) return
+  
+  // 检查现有的 mermaid 代码块
+  const mermaidCodeBlocks = document.querySelectorAll('.notion-code.language-mermaid')
+  let needRender = false
+  
+  for (const block of mermaidCodeBlocks) {
+    const chart = block.querySelector('code')?.textContent
+    if (chart && !block.querySelector('.mermaid')) {
+      const mermaidChart = document.createElement('pre')
+      mermaidChart.className = 'mermaid'
+      mermaidChart.innerHTML = chart
+      block.appendChild(mermaidChart)
+      needRender = true
+    }
+  }
+  
+  // 如果需要渲染 mermaid 图表
+  if (needRender) {
+    try {
+      await loadExternalResource(mermaidCDN, 'js')
+      setTimeout(() => {
+        const mermaid = window.mermaid
+        mermaid?.contentLoaded()
+      }, 100)
+    } catch (error) {
+      console.error('加载 Mermaid 失败:', error)
+    }
+  }
+
+  // 设置监视器处理动态添加的 mermaid 代码块
   const observer = new MutationObserver(async mutationsList => {
     for (const m of mutationsList) {
       if (m.target.className === 'notion-code language-mermaid') {
-        const chart = m.target.querySelector('code').textContent
+        const chart = m.target.querySelector('code')?.textContent
         if (chart && !m.target.querySelector('.mermaid')) {
           const mermaidChart = document.createElement('pre')
           mermaidChart.className = 'mermaid'
           mermaidChart.innerHTML = chart
           m.target.appendChild(mermaidChart)
-        }
-
-        const mermaidsSvg = document.querySelectorAll('.mermaid')
-        if (mermaidsSvg) {
-          let needLoad = false
-          for (const e of mermaidsSvg) {
-            if (e?.firstChild?.nodeName !== 'svg') {
-              needLoad = true
+          
+          try {
+            if (!window.mermaid) {
+              await loadExternalResource(mermaidCDN, 'js')
             }
-          }
-          if (needLoad) {
-            loadExternalResource(mermaidCDN, 'js').then(url => {
-              setTimeout(() => {
-                const mermaid = window.mermaid
-                mermaid?.contentLoaded()
-              }, 100)
-            })
+            setTimeout(() => {
+              window.mermaid?.contentLoaded()
+            }, 100)
+          } catch (error) {
+            console.error('动态加载 Mermaid 失败:', error)
           }
         }
       }
     }
   })
-  if (document.querySelector('#notion-article')) {
-    observer.observe(document.querySelector('#notion-article'), {
-      attributes: true,
-      subtree: true
-    })
-  }
+  
+  observer.observe(document.querySelector('#notion-article'), {
+    attributes: true,
+    subtree: true
+  })
 }
 
 function renderPrismMac(codeLineNumbers) {
   const container = document?.getElementById('notion-article')
+  if (!container) return
 
   // Add line numbers
   if (codeLineNumbers) {
-    const codeBlocks = container?.getElementsByTagName('pre')
+    const codeBlocks = container.getElementsByTagName('pre')
     if (codeBlocks) {
       Array.from(codeBlocks).forEach(item => {
         if (!item.classList.contains('line-numbers')) {
@@ -224,32 +341,36 @@ function renderPrismMac(codeLineNumbers) {
       })
     }
   }
-  // 重新渲染之前检查所有的多余text
 
   try {
-    Prism.highlightAll()
+    // 确保 Prism 已加载
+    if (typeof Prism !== 'undefined') {
+      Prism.highlightAll()
+    }
   } catch (err) {
-    console.log('代码渲染', err)
+    console.error('代码渲染出错:', err)
   }
 
-  const codeToolBars = container?.getElementsByClassName('code-toolbar')
-  // Add pre-mac element for Mac Style UI
-  if (codeToolBars) {
-    Array.from(codeToolBars).forEach(item => {
-      const existPreMac = item.getElementsByClassName('pre-mac')
-      if (existPreMac.length < codeToolBars.length) {
-        const preMac = document.createElement('div')
-        preMac.classList.add('pre-mac')
-        preMac.innerHTML = '<span></span><span></span><span></span>'
-        item?.appendChild(preMac, item)
-      }
-    })
-  }
-
-  // 折叠代码行号bug
-  if (codeLineNumbers) {
-    fixCodeLineStyle()
-  }
+  // 添加 Mac 样式 UI
+  setTimeout(() => {
+    const codeToolBars = container.querySelectorAll('.code-toolbar')
+    if (codeToolBars && codeToolBars.length > 0) {
+      Array.from(codeToolBars).forEach(item => {
+        // 检查是否已经有 pre-mac 元素
+        if (!item.querySelector('.pre-mac')) {
+          const preMac = document.createElement('div')
+          preMac.classList.add('pre-mac')
+          preMac.innerHTML = '<span></span><span></span><span></span>'
+          item.appendChild(preMac)
+        }
+      })
+    }
+    
+    // 修复行号样式
+    if (codeLineNumbers) {
+      fixCodeLineStyle()
+    }
+  }, 50)
 }
 
 /**
@@ -257,26 +378,41 @@ function renderPrismMac(codeLineNumbers) {
  * 在此手动resize计算
  */
 const fixCodeLineStyle = () => {
+  // 检查是否有需要修复的代码块
+  const preCodes = document.querySelectorAll('pre.notion-code.line-numbers')
+  for (const preCode of preCodes) {
+    if (typeof Prism !== 'undefined' && 
+        Prism.plugins && 
+        Prism.plugins.lineNumbers) {
+      Prism.plugins.lineNumbers.resize(preCode)
+    }
+  }
+  
+  // 观察 details 元素的变化，处理折叠导致的行号问题
   const observer = new MutationObserver(mutationsList => {
     for (const m of mutationsList) {
-      if (m.target.nodeName === 'DETAILS') {
-        const preCodes = m.target.querySelectorAll('pre.notion-code')
-        for (const preCode of preCodes) {
-          Prism.plugins.lineNumbers.resize(preCode)
-        }
+      if (m.target.nodeName === 'DETAILS' || 
+          m.target.classList.contains('collapse-wrapper')) {
+        setTimeout(() => {
+          const affectedCodes = m.target.querySelectorAll('pre.notion-code.line-numbers')
+          for (const code of affectedCodes) {
+            if (typeof Prism !== 'undefined' && 
+                Prism.plugins && 
+                Prism.plugins.lineNumbers) {
+              Prism.plugins.lineNumbers.resize(code)
+            }
+          }
+        }, 100)
       }
     }
   })
-  observer.observe(document.querySelector('#notion-article'), {
-    attributes: true,
-    subtree: true
-  })
-  setTimeout(() => {
-    const preCodes = document.querySelectorAll('pre.notion-code')
-    for (const preCode of preCodes) {
-      Prism.plugins.lineNumbers.resize(preCode)
-    }
-  }, 10)
+  
+  if (document.querySelector('#notion-article')) {
+    observer.observe(document.querySelector('#notion-article'), {
+      attributes: true,
+      subtree: true
+    })
+  }
 }
 
 export default PrismMac
