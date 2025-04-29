@@ -40,7 +40,11 @@ const PrismMac = () => {
 
   useEffect(() => {
     if (codeMacBar) {
-      loadExternalResource('/css/prism-mac-style.css', 'css')
+      loadExternalResource('/css/prism-mac-style.css', 'css').then(() => {
+        setTimeout(() => {
+          renderPrismMac(codeLineNumbers)
+        }, 300)
+      })
     }
     // 加载prism样式
     loadPrismThemeCSS(
@@ -59,6 +63,11 @@ const PrismMac = () => {
       renderPrismMac(codeLineNumbers)
       renderMermaid(mermaidCDN)
       renderCollapseCode(codeCollapse, codeCollapseExpandDefault)
+      
+      // 添加延迟执行确保样式和代码高亮都能正确应用
+      setTimeout(() => {
+        renderPrismMac(codeLineNumbers)
+      }, 500)
     })
   }, [router, isDarkMode])
 
