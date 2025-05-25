@@ -5,6 +5,17 @@ import { getGlobalData } from '@/lib/db/getSiteData'
 import { extractLangId, extractLangPrefix } from '@/lib/utils/pageId'
 import { getServerSideSitemap } from 'next-sitemap'
 
+// 添加函数用于转义XML特殊字符
+function escapeXmlChars(url) {
+  if (!url) return url
+  return url
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;')
+}
+
 export const getServerSideProps = async ctx => {
   let fields = []
   const siteIds = BLOG.NOTION_PAGE_ID.split(',')
@@ -49,37 +60,37 @@ function generateLocalesSitemap(link, allPages, locale) {
   const dateNow = new Date().toISOString().split('T')[0]
   const defaultFields = [
     {
-      loc: `${link}${locale}`,
+      loc: escapeXmlChars(`${link}${locale}`),
       lastmod: dateNow,
       changefreq: 'daily',
       priority: '0.7'
     },
     {
-      loc: `${link}${locale}/archive`,
+      loc: escapeXmlChars(`${link}${locale}/archive`),
       lastmod: dateNow,
       changefreq: 'daily',
       priority: '0.7'
     },
     {
-      loc: `${link}${locale}/category`,
+      loc: escapeXmlChars(`${link}${locale}/category`),
       lastmod: dateNow,
       changefreq: 'daily',
       priority: '0.7'
     },
     {
-      loc: `${link}${locale}/rss/feed.xml`,
+      loc: escapeXmlChars(`${link}${locale}/rss/feed.xml`),
       lastmod: dateNow,
       changefreq: 'daily',
       priority: '0.7'
     },
     {
-      loc: `${link}${locale}/search`,
+      loc: escapeXmlChars(`${link}${locale}/search`),
       lastmod: dateNow,
       changefreq: 'daily',
       priority: '0.7'
     },
     {
-      loc: `${link}${locale}/tag`,
+      loc: escapeXmlChars(`${link}${locale}/tag`),
       lastmod: dateNow,
       changefreq: 'daily',
       priority: '0.7'
@@ -93,7 +104,7 @@ function generateLocalesSitemap(link, allPages, locale) {
           ? post?.slug?.slice(1)
           : post.slug
         return {
-          loc: `${link}${locale}/${slugWithoutLeadingSlash}`,
+          loc: escapeXmlChars(`${link}${locale}/${slugWithoutLeadingSlash}`),
           lastmod: new Date(post?.publishDay).toISOString().split('T')[0],
           changefreq: 'daily',
           priority: '0.7'
