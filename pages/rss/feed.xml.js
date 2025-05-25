@@ -1,7 +1,6 @@
 // pages/rss/feed.xml.js
 import BLOG from '@/blog.config'
 import { generateRss } from '@/lib/rss'
-import { getGlobalData } from '@/lib/db/getSiteData'
 import { extractLangId } from '@/lib/utils/pageId'
 
 export const getServerSideProps = async ({ req, res }) => {
@@ -21,9 +20,15 @@ export const getServerSideProps = async ({ req, res }) => {
     const id = extractLangId(siteId)
     
     console.log('[RSS] 开始获取站点数据...')
+    
+    // 使用 dynamic import 避免在编译时引入可能导致问题的依赖
+    const { getGlobalData } = await import('@/lib/db/getSiteData')
+    
     const siteData = await getGlobalData({
       pageId: id,
-      from: 'rss-feed'
+      from: 'rss-feed',
+      // 避免加载完整文章内容，减少依赖
+      simplifySiteData: true
     })
 
     if (!siteData) {
@@ -52,8 +57,8 @@ export const getServerSideProps = async ({ req, res }) => {
       // 即使没有文章也生成空的RSS
     }
 
-    // 生成RSS
-    await generateRss({
+    // 使用简化版的 generateRss
+    const feed = await generateRss({
       NOTION_CONFIG: siteData.NOTION_CONFIG || {},
       siteInfo: siteData.siteInfo || {
         title: BLOG.TITLE,
@@ -62,38 +67,6 @@ export const getServerSideProps = async ({ req, res }) => {
       },
       latestPosts: publishedPosts
     })
-
-    // 直接使用Feed库生成RSS内容，而不是读取文件
-    const { Feed } = require('feed')
-    const year = new Date().getFullYear()
-    const siteInfo = siteData.siteInfo || {}
-    const NOTION_CONFIG = siteData.NOTION_CONFIG || {}
-    
-    const feed = new Feed({
-      title: siteInfo.title || BLOG.TITLE,
-      description: siteInfo.description || BLOG.DESCRIPTION,
-      link: `${siteInfo.link || BLOG.LINK}${NOTION_CONFIG.SUB_PATH || BLOG.SUB_PATH || ''}`,
-      language: NOTION_CONFIG.LANG || BLOG.LANG,
-      favicon: `${siteInfo.link || BLOG.LINK}/favicon.png`,
-      copyright: `All rights reserved ${year}, ${NOTION_CONFIG.AUTHOR || BLOG.AUTHOR}`,
-      author: {
-        name: NOTION_CONFIG.AUTHOR || BLOG.AUTHOR,
-        email: NOTION_CONFIG.CONTACT_EMAIL || BLOG.CONTACT_EMAIL,
-        link: siteInfo.link || BLOG.LINK
-      }
-    })
-
-    // 添加文章到feed
-    for (const post of publishedPosts) {
-      const content = post.summary || post.title || '暂无内容预览'
-      feed.addItem({
-        title: post.title,
-        link: `${siteInfo.link || BLOG.LINK}/${post.slug}`,
-        description: post.summary || '',
-        content: content.length > 300 ? content.substring(0, 300) + '...' : content,
-        date: new Date(post.publishDay || post.date || new Date())
-      })
-    }
 
     const rssContent = feed.rss2()
     console.log('[RSS] RSS内容生成成功')

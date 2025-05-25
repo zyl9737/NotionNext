@@ -1,7 +1,6 @@
 // pages/rss/atom.xml.js
 import BLOG from '@/blog.config'
 import { generateRss } from '@/lib/rss'
-import { getGlobalData } from '@/lib/db/getSiteData'
 import { extractLangId } from '@/lib/utils/pageId'
 
 export const getServerSideProps = async ({ req, res }) => {
@@ -21,9 +20,15 @@ export const getServerSideProps = async ({ req, res }) => {
     const id = extractLangId(siteId)
     
     console.log('[Atom] 开始获取站点数据...')
+    
+    // 使用 dynamic import 避免在编译时引入可能导致问题的依赖
+    const { getGlobalData } = await import('@/lib/db/getSiteData')
+    
     const siteData = await getGlobalData({
       pageId: id,
-      from: 'atom-feed'
+      from: 'atom-feed',
+      // 避免加载完整文章内容，减少依赖
+      simplifySiteData: true
     })
 
     if (!siteData) {
@@ -47,37 +52,16 @@ export const getServerSideProps = async ({ req, res }) => {
 
     console.log(`[Atom] 找到 ${publishedPosts.length} 篇已发布文章`)
 
-    // 直接使用Feed库生成Atom内容
-    const { Feed } = require('feed')
-    const year = new Date().getFullYear()
-    const siteInfo = siteData.siteInfo || {}
-    const NOTION_CONFIG = siteData.NOTION_CONFIG || {}
-    
-    const feed = new Feed({
-      title: siteInfo.title || BLOG.TITLE,
-      description: siteInfo.description || BLOG.DESCRIPTION,
-      link: `${siteInfo.link || BLOG.LINK}${NOTION_CONFIG.SUB_PATH || BLOG.SUB_PATH || ''}`,
-      language: NOTION_CONFIG.LANG || BLOG.LANG,
-      favicon: `${siteInfo.link || BLOG.LINK}/favicon.png`,
-      copyright: `All rights reserved ${year}, ${NOTION_CONFIG.AUTHOR || BLOG.AUTHOR}`,
-      author: {
-        name: NOTION_CONFIG.AUTHOR || BLOG.AUTHOR,
-        email: NOTION_CONFIG.CONTACT_EMAIL || BLOG.CONTACT_EMAIL,
-        link: siteInfo.link || BLOG.LINK
-      }
+    // 使用简化版的 generateRss
+    const feed = await generateRss({
+      NOTION_CONFIG: siteData.NOTION_CONFIG || {},
+      siteInfo: siteData.siteInfo || {
+        title: BLOG.TITLE,
+        description: BLOG.DESCRIPTION,
+        link: BLOG.LINK
+      },
+      latestPosts: publishedPosts
     })
-
-    // 添加文章到feed
-    for (const post of publishedPosts) {
-      const content = post.summary || post.title || '暂无内容预览'
-      feed.addItem({
-        title: post.title,
-        link: `${siteInfo.link || BLOG.LINK}/${post.slug}`,
-        description: post.summary || '',
-        content: content.length > 300 ? content.substring(0, 300) + '...' : content,
-        date: new Date(post.publishDay || post.date || new Date())
-      })
-    }
 
     const atomContent = feed.atom1()
     console.log('[Atom] Atom内容生成成功')
