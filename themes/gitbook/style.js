@@ -48,6 +48,65 @@ const Style = () => {
         transition: border-color 0.3s ease;
       }
       
+      /* 标题后添加#号 */
+      #theme-gitbook .notion-h1::after {
+        content: " #";
+        color: #888;
+        font-weight: normal;
+        margin-left: 0.5rem;
+        opacity: 0.6;
+      }
+      
+      #theme-gitbook .notion-h2::after {
+        content: " ##";
+        color: #888;
+        font-weight: normal;
+        margin-left: 0.5rem;
+        opacity: 0.6;
+      }
+      
+      #theme-gitbook .notion-h3::after {
+        content: " ###";
+        color: #888;
+        font-weight: normal;
+        margin-left: 0.5rem;
+        opacity: 0.6;
+      }
+      
+      #theme-gitbook .notion-h4::after {
+        content: " ####";
+        color: #888;
+        font-weight: normal;
+        margin-left: 0.5rem;
+        opacity: 0.6;
+      }
+      
+      #theme-gitbook .notion-h5::after {
+        content: " #####";
+        color: #888;
+        font-weight: normal;
+        margin-left: 0.5rem;
+        opacity: 0.6;
+      }
+      
+      #theme-gitbook .notion-h6::after {
+        content: " ######";
+        color: #888;
+        font-weight: normal;
+        margin-left: 0.5rem;
+        opacity: 0.6;
+      }
+      
+      /* 暗黑模式下#号颜色调整 */
+      .dark #theme-gitbook .notion-h1::after,
+      .dark #theme-gitbook .notion-h2::after,
+      .dark #theme-gitbook .notion-h3::after,
+      .dark #theme-gitbook .notion-h4::after,
+      .dark #theme-gitbook .notion-h5::after,
+      .dark #theme-gitbook .notion-h6::after {
+        color: #bbb;
+      }
+      
       /* 导航菜单美化 */
       #theme-gitbook .sticky {
         transition: all 0.3s ease;
