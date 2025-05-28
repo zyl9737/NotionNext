@@ -48,63 +48,63 @@ const Style = () => {
         transition: border-color 0.3s ease;
       }
       
-      /* 标题后添加#号 */
-      #theme-gitbook .notion-h1::after {
-        content: " #";
-        color: #888;
+      /* 标题井号样式 - 修改为鼠标悬停显示绿色标记 */
+      #theme-gitbook .notion-h1::after,
+      #theme-gitbook .notion-h2::after,
+      #theme-gitbook .notion-h3::after,
+      #theme-gitbook .notion-h4::after,
+      #theme-gitbook .notion-h5::after,
+      #theme-gitbook .notion-h6::after {
+        color: #2ecc71;
         font-weight: normal;
         margin-left: 0.5rem;
-        opacity: 0.6;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+      
+      /* 鼠标悬停时显示井号 */
+      #theme-gitbook .notion-h1:hover::after,
+      #theme-gitbook .notion-h2:hover::after,
+      #theme-gitbook .notion-h3:hover::after,
+      #theme-gitbook .notion-h4:hover::after,
+      #theme-gitbook .notion-h5:hover::after,
+      #theme-gitbook .notion-h6:hover::after {
+        opacity: 0.8;
+      }
+      
+      /* 各级标题井号内容 */
+      #theme-gitbook .notion-h1::after {
+        content: " #";
       }
       
       #theme-gitbook .notion-h2::after {
         content: " ##";
-        color: #888;
-        font-weight: normal;
-        margin-left: 0.5rem;
-        opacity: 0.6;
       }
       
       #theme-gitbook .notion-h3::after {
         content: " ###";
-        color: #888;
-        font-weight: normal;
-        margin-left: 0.5rem;
-        opacity: 0.6;
       }
       
       #theme-gitbook .notion-h4::after {
         content: " ####";
-        color: #888;
-        font-weight: normal;
-        margin-left: 0.5rem;
-        opacity: 0.6;
       }
       
       #theme-gitbook .notion-h5::after {
         content: " #####";
-        color: #888;
-        font-weight: normal;
-        margin-left: 0.5rem;
-        opacity: 0.6;
       }
       
       #theme-gitbook .notion-h6::after {
         content: " ######";
-        color: #888;
-        font-weight: normal;
-        margin-left: 0.5rem;
-        opacity: 0.6;
       }
       
       /* 暗黑模式下#号颜色调整 */
-      .dark #theme-gitbook .notion-h1::after,
-      .dark #theme-gitbook .notion-h2::after,
-      .dark #theme-gitbook .notion-h3::after,
-      .dark #theme-gitbook .notion-h4::after,
-      .dark #theme-gitbook .notion-h5::after,
-      .dark #theme-gitbook .notion-h6::after {
-        color: #bbb;
+      .dark #theme-gitbook .notion-h1:hover::after,
+      .dark #theme-gitbook .notion-h2:hover::after,
+      .dark #theme-gitbook .notion-h3:hover::after,
+      .dark #theme-gitbook .notion-h4:hover::after,
+      .dark #theme-gitbook .notion-h5:hover::after,
+      .dark #theme-gitbook .notion-h6:hover::after {
+        color: #2ecc71;
       }
       
       /* 导航菜单美化 */
