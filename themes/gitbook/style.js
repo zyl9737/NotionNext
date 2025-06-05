@@ -56,7 +56,7 @@ const Style = () => {
       #theme-gitbook .notion-h5,
       #theme-gitbook .notion-h6 {
         position: relative;
-        padding-left: 2rem;
+        padding-left: 1.5rem;
         margin-top: 1.5rem;
         margin-bottom: 0.8rem;
         line-height: 1.4;
@@ -76,7 +76,7 @@ const Style = () => {
       #theme-gitbook .notion-h1::before {
         content: "H1";
         position: absolute;
-        left: 0;
+        left: -1.5rem;
         top: 0;
         font-size: 0.7rem;
         font-weight: 500;
@@ -101,8 +101,8 @@ const Style = () => {
       #theme-gitbook .notion-h2::before {
         content: "H2";
         position: absolute;
-        left: 0;
-        top: 0;
+        left: -1.5rem;
+        top: 0.1rem;
         font-size: 0.65rem;
         font-weight: 500;
         color: #6b7280;
@@ -112,6 +112,7 @@ const Style = () => {
         letter-spacing: 0.3px;
         transition: all 0.3s ease;
         z-index: 1;
+        white-space: nowrap;
       }
       
       /* H3 样式 */
@@ -123,8 +124,8 @@ const Style = () => {
       #theme-gitbook .notion-h3::before {
         content: "H3";
         position: absolute;
-        left: 0;
-        top: 0;
+        left: -1.5rem;
+        top: 0.1rem;
         font-size: 0.6rem;
         font-weight: 500;
         color: #6b7280;
@@ -134,6 +135,7 @@ const Style = () => {
         letter-spacing: 0.3px;
         transition: all 0.3s ease;
         z-index: 1;
+        white-space: nowrap;
       }
       
       /* H4 样式 */
@@ -145,8 +147,8 @@ const Style = () => {
       #theme-gitbook .notion-h4::before {
         content: "H4";
         position: absolute;
-        left: 0;
-        top: 0;
+        left: -1.5rem;
+        top: 0.1rem;
         font-size: 0.55rem;
         font-weight: 500;
         color: #9ca3af;
@@ -156,6 +158,7 @@ const Style = () => {
         letter-spacing: 0.3px;
         transition: all 0.3s ease;
         z-index: 1;
+        white-space: nowrap;
       }
       
       /* H5 样式 */
@@ -167,8 +170,8 @@ const Style = () => {
       #theme-gitbook .notion-h5::before {
         content: "H5";
         position: absolute;
-        left: 0;
-        top: 0;
+        left: -1.5rem;
+        top: 0.1rem;
         font-size: 0.5rem;
         font-weight: 500;
         color: #9ca3af;
@@ -178,6 +181,7 @@ const Style = () => {
         letter-spacing: 0.3px;
         transition: all 0.3s ease;
         z-index: 1;
+        white-space: nowrap;
       }
       
       /* H6 样式 */
@@ -189,8 +193,8 @@ const Style = () => {
       #theme-gitbook .notion-h6::before {
         content: "H6";
         position: absolute;
-        left: 0;
-        top: 0;
+        left: -1.5rem;
+        top: 0.1rem;
         font-size: 0.45rem;
         font-weight: 500;
         color: #9ca3af;
@@ -200,6 +204,7 @@ const Style = () => {
         letter-spacing: 0.3px;
         transition: all 0.3s ease;
         z-index: 1;
+        white-space: nowrap;
       }
       
       /* 确保链接锚点跟在标题文字后面 */
@@ -423,7 +428,16 @@ const Style = () => {
         #theme-gitbook .notion-h4,
         #theme-gitbook .notion-h5,
         #theme-gitbook .notion-h6 {
-          padding-left: 1.5rem;
+          padding-left: 1rem;
+        }
+        
+        #theme-gitbook .notion-h1::before,
+        #theme-gitbook .notion-h2::before,
+        #theme-gitbook .notion-h3::before,
+        #theme-gitbook .notion-h4::before,
+        #theme-gitbook .notion-h5::before,
+        #theme-gitbook .notion-h6::before {
+          left: -1rem;
         }
       }
       
