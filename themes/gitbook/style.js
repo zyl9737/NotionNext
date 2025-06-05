@@ -50,88 +50,88 @@ const Style = () => {
       }
       
       /* 标题H几标记样式 - 显示在左上角的小灰色标记 */
-      #theme-gitbook .notion-h1,
-      #theme-gitbook .notion-h2,
-      #theme-gitbook .notion-h3,
-      #theme-gitbook .notion-h4,
-      #theme-gitbook .notion-h5,
-      #theme-gitbook .notion-h6 {
+      #theme-gitbook .notion-h.notion-h1,
+      #theme-gitbook .notion-h.notion-h2,
+      #theme-gitbook .notion-h.notion-h3,
+      #theme-gitbook .notion-h.notion-h4,
+      #theme-gitbook .notion-h.notion-h5,
+      #theme-gitbook .notion-h.notion-h6 {
         position: relative;
       }
       
-      #theme-gitbook .notion-h1::before,
-      #theme-gitbook .notion-h2::before,
-      #theme-gitbook .notion-h3::before,
-      #theme-gitbook .notion-h4::before,
-      #theme-gitbook .notion-h5::before,
-      #theme-gitbook .notion-h6::before {
+      #theme-gitbook .notion-h.notion-h1::before,
+      #theme-gitbook .notion-h.notion-h2::before,
+      #theme-gitbook .notion-h.notion-h3::before,
+      #theme-gitbook .notion-h.notion-h4::before,
+      #theme-gitbook .notion-h.notion-h5::before,
+      #theme-gitbook .notion-h.notion-h6::before {
         position: absolute;
-        top: -8px;
-        left: -20px;
-        font-size: 0.75rem;
+        top: 0;
+        left: -25px;
+        font-size: 0.7rem;
         font-weight: 500;
         color: #999;
         background-color: rgba(153, 153, 153, 0.1);
-        padding: 2px 4px;
-        border-radius: 3px;
-        line-height: 1;
+        padding: 1px 3px;
+        border-radius: 2px;
+        line-height: 1.2;
         transition: all 0.3s ease;
-        opacity: 0.8;
+        opacity: 0.7;
       }
       
       /* 各级标题H几内容 */
-      #theme-gitbook .notion-h1::before {
+      #theme-gitbook .notion-h.notion-h1::before {
         content: "H1";
       }
       
-      #theme-gitbook .notion-h2::before {
+      #theme-gitbook .notion-h.notion-h2::before {
         content: "H2";
       }
       
-      #theme-gitbook .notion-h3::before {
+      #theme-gitbook .notion-h.notion-h3::before {
         content: "H3";
       }
       
-      #theme-gitbook .notion-h4::before {
+      #theme-gitbook .notion-h.notion-h4::before {
         content: "H4";
       }
       
-      #theme-gitbook .notion-h5::before {
+      #theme-gitbook .notion-h.notion-h5::before {
         content: "H5";
       }
       
-      #theme-gitbook .notion-h6::before {
+      #theme-gitbook .notion-h.notion-h6::before {
         content: "H6";
       }
       
       /* 鼠标悬停效果 */
-      #theme-gitbook .notion-h1:hover::before,
-      #theme-gitbook .notion-h2:hover::before,
-      #theme-gitbook .notion-h3:hover::before,
-      #theme-gitbook .notion-h4:hover::before,
-      #theme-gitbook .notion-h5:hover::before,
-      #theme-gitbook .notion-h6:hover::before {
+      #theme-gitbook .notion-h.notion-h1:hover::before,
+      #theme-gitbook .notion-h.notion-h2:hover::before,
+      #theme-gitbook .notion-h.notion-h3:hover::before,
+      #theme-gitbook .notion-h.notion-h4:hover::before,
+      #theme-gitbook .notion-h.notion-h5:hover::before,
+      #theme-gitbook .notion-h.notion-h6:hover::before {
         opacity: 1;
         background-color: rgba(153, 153, 153, 0.2);
       }
       
       /* 暗黑模式下H几标记颜色调整 */
-      .dark #theme-gitbook .notion-h1::before,
-      .dark #theme-gitbook .notion-h2::before,
-      .dark #theme-gitbook .notion-h3::before,
-      .dark #theme-gitbook .notion-h4::before,
-      .dark #theme-gitbook .notion-h5::before,
-      .dark #theme-gitbook .notion-h6::before {
+      .dark #theme-gitbook .notion-h.notion-h1::before,
+      .dark #theme-gitbook .notion-h.notion-h2::before,
+      .dark #theme-gitbook .notion-h.notion-h3::before,
+      .dark #theme-gitbook .notion-h.notion-h4::before,
+      .dark #theme-gitbook .notion-h.notion-h5::before,
+      .dark #theme-gitbook .notion-h.notion-h6::before {
         color: #666;
         background-color: rgba(102, 102, 102, 0.1);
       }
       
-      .dark #theme-gitbook .notion-h1:hover::before,
-      .dark #theme-gitbook .notion-h2:hover::before,
-      .dark #theme-gitbook .notion-h3:hover::before,
-      .dark #theme-gitbook .notion-h4:hover::before,
-      .dark #theme-gitbook .notion-h5:hover::before,
-      .dark #theme-gitbook .notion-h6:hover::before {
+      .dark #theme-gitbook .notion-h.notion-h1:hover::before,
+      .dark #theme-gitbook .notion-h.notion-h2:hover::before,
+      .dark #theme-gitbook .notion-h.notion-h3:hover::before,
+      .dark #theme-gitbook .notion-h.notion-h4:hover::before,
+      .dark #theme-gitbook .notion-h.notion-h5:hover::before,
+      .dark #theme-gitbook .notion-h.notion-h6:hover::before {
         background-color: rgba(102, 102, 102, 0.2);
       }
       
