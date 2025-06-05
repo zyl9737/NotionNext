@@ -94,14 +94,14 @@ const Style = () => {
         font-size: 1.6rem;
         color: #2d3748;
         border-left: 3px solid #e5e7eb;
-        padding-left: 0.8rem;
-        margin-left: -0.8rem;
+        padding-left: 1rem;
+        margin-left: -0.2rem;
       }
       
       #theme-gitbook .notion-h2::before {
         content: "H2";
         position: absolute;
-        left: 0;
+        left: -0.2rem;
         top: 0;
         font-size: 0.65rem;
         font-weight: 500;
@@ -111,7 +111,7 @@ const Style = () => {
         border-radius: 3px;
         letter-spacing: 0.3px;
         transition: all 0.3s ease;
-        z-index: 1;
+        z-index: 2;
         white-space: nowrap;
       }
       
@@ -278,6 +278,10 @@ const Style = () => {
       .dark #theme-gitbook .notion-h3::before {
         color: #9ca3af;
         background-color: #374151;
+      }
+      
+      .dark #theme-gitbook .notion-h2::before {
+        z-index: 2;
       }
       
       .dark #theme-gitbook .notion-h4::before,
