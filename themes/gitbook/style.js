@@ -56,9 +56,9 @@ const Style = () => {
       #theme-gitbook .notion-h5,
       #theme-gitbook .notion-h6 {
         position: relative;
-        padding-left: 3rem;
-        margin-top: 2rem;
-        margin-bottom: 1rem;
+        padding-left: 2rem;
+        margin-top: 1.5rem;
+        margin-bottom: 0.8rem;
         line-height: 1.4;
         font-weight: 600;
         transition: all 0.3s ease;
@@ -70,22 +70,23 @@ const Style = () => {
         color: #1a1a1a;
         border-bottom: 2px solid #e5e7eb;
         padding-bottom: 0.5rem;
-        margin-bottom: 1.5rem;
+        margin-bottom: 1.2rem;
       }
       
       #theme-gitbook .notion-h1::before {
         content: "H1";
         position: absolute;
         left: 0;
-        top: -0.2rem;
-        font-size: 0.75rem;
+        top: 0;
+        font-size: 0.7rem;
         font-weight: 500;
         color: #9ca3af;
         background-color: #f3f4f6;
-        padding: 0.2rem 0.4rem;
-        border-radius: 4px;
-        letter-spacing: 0.5px;
+        padding: 0.15rem 0.3rem;
+        border-radius: 3px;
+        letter-spacing: 0.3px;
         transition: all 0.3s ease;
+        z-index: 1;
       }
       
       /* H2 样式 */
@@ -93,23 +94,24 @@ const Style = () => {
         font-size: 1.6rem;
         color: #2d3748;
         border-left: 3px solid #e5e7eb;
-        padding-left: 1rem;
-        margin-left: -1rem;
+        padding-left: 0.8rem;
+        margin-left: -0.8rem;
       }
       
       #theme-gitbook .notion-h2::before {
         content: "H2";
         position: absolute;
         left: 0;
-        top: -0.2rem;
-        font-size: 0.7rem;
+        top: 0;
+        font-size: 0.65rem;
         font-weight: 500;
         color: #6b7280;
         background-color: #f9fafb;
-        padding: 0.15rem 0.35rem;
+        padding: 0.12rem 0.25rem;
         border-radius: 3px;
-        letter-spacing: 0.5px;
+        letter-spacing: 0.3px;
         transition: all 0.3s ease;
+        z-index: 1;
       }
       
       /* H3 样式 */
@@ -122,15 +124,16 @@ const Style = () => {
         content: "H3";
         position: absolute;
         left: 0;
-        top: -0.15rem;
-        font-size: 0.65rem;
+        top: 0;
+        font-size: 0.6rem;
         font-weight: 500;
         color: #6b7280;
         background-color: #f9fafb;
-        padding: 0.1rem 0.3rem;
-        border-radius: 3px;
-        letter-spacing: 0.5px;
+        padding: 0.1rem 0.2rem;
+        border-radius: 2px;
+        letter-spacing: 0.3px;
         transition: all 0.3s ease;
+        z-index: 1;
       }
       
       /* H4 样式 */
@@ -143,15 +146,16 @@ const Style = () => {
         content: "H4";
         position: absolute;
         left: 0;
-        top: -0.1rem;
-        font-size: 0.6rem;
+        top: 0;
+        font-size: 0.55rem;
         font-weight: 500;
         color: #9ca3af;
         background-color: #f9fafb;
-        padding: 0.1rem 0.25rem;
+        padding: 0.08rem 0.18rem;
         border-radius: 2px;
-        letter-spacing: 0.5px;
+        letter-spacing: 0.3px;
         transition: all 0.3s ease;
+        z-index: 1;
       }
       
       /* H5 样式 */
@@ -164,15 +168,16 @@ const Style = () => {
         content: "H5";
         position: absolute;
         left: 0;
-        top: -0.1rem;
-        font-size: 0.55rem;
+        top: 0;
+        font-size: 0.5rem;
         font-weight: 500;
         color: #9ca3af;
         background-color: #f9fafb;
-        padding: 0.08rem 0.2rem;
+        padding: 0.06rem 0.15rem;
         border-radius: 2px;
-        letter-spacing: 0.5px;
+        letter-spacing: 0.3px;
         transition: all 0.3s ease;
+        z-index: 1;
       }
       
       /* H6 样式 */
@@ -185,15 +190,37 @@ const Style = () => {
         content: "H6";
         position: absolute;
         left: 0;
-        top: -0.05rem;
-        font-size: 0.5rem;
+        top: 0;
+        font-size: 0.45rem;
         font-weight: 500;
         color: #9ca3af;
         background-color: #f9fafb;
-        padding: 0.05rem 0.15rem;
+        padding: 0.05rem 0.12rem;
         border-radius: 2px;
-        letter-spacing: 0.5px;
+        letter-spacing: 0.3px;
         transition: all 0.3s ease;
+        z-index: 1;
+      }
+      
+      /* 确保链接锚点跟在标题文字后面 */
+      #theme-gitbook .notion-h1 a,
+      #theme-gitbook .notion-h2 a,
+      #theme-gitbook .notion-h3 a,
+      #theme-gitbook .notion-h4 a,
+      #theme-gitbook .notion-h5 a,
+      #theme-gitbook .notion-h6 a {
+        position: relative;
+        z-index: 2;
+      }
+      
+      /* 隐藏标题内部的链接装饰 */
+      #theme-gitbook .notion-h1 a::before,
+      #theme-gitbook .notion-h2 a::before,
+      #theme-gitbook .notion-h3 a::before,
+      #theme-gitbook .notion-h4 a::before,
+      #theme-gitbook .notion-h5 a::before,
+      #theme-gitbook .notion-h6 a::before {
+        display: none !important;
       }
       
       /* 鼠标悬停效果 */
@@ -396,7 +423,7 @@ const Style = () => {
         #theme-gitbook .notion-h4,
         #theme-gitbook .notion-h5,
         #theme-gitbook .notion-h6 {
-          padding-left: 2.5rem;
+          padding-left: 1.5rem;
         }
       }
       
