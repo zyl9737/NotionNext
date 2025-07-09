@@ -28,6 +28,11 @@ module.exports = {
   CODE_COLLAPSE_EXPAND_DEFAULT:
     process.env.NEXT_PUBLIC_CODE_COLLAPSE_EXPAND_DEFAULT || true, // 折叠代码默认是展开状态
   
+  // 代码块加载动画相关
+  CODE_LOADING_ANIMATION: process.env.NEXT_PUBLIC_CODE_LOADING_ANIMATION || true, // 代码块加载时显示动画
+  CODE_RENDER_TIMEOUT: process.env.NEXT_PUBLIC_CODE_RENDER_TIMEOUT || 3000, // 代码块渲染超时时间（毫秒）
+  CODE_RENDER_DELAY: process.env.NEXT_PUBLIC_CODE_RENDER_DELAY || 200, // 代码块渲染延迟时间（毫秒）
+  
   // 性能优化相关
   CODE_RENDER_PERFORMANCE_MODE: process.env.NEXT_PUBLIC_CODE_PERFORMANCE_MODE || true, // 启用代码渲染性能优化模式
   CODE_HIGHLIGHT_DEBOUNCE_DELAY: process.env.NEXT_PUBLIC_CODE_HIGHLIGHT_DEBOUNCE || 150, // 代码高亮防抖延迟（毫秒）

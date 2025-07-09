@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import Prism from 'prismjs'
 // 所有语言的prismjs 使用autoloader引入
 // import 'prismjs/plugins/autoloader/prism-autoloader'
@@ -38,12 +38,22 @@ const PrismMac = () => {
   const codeCollapse = siteConfig('CODE_COLLAPSE')
   const codeCollapseExpandDefault = siteConfig('CODE_COLLAPSE_EXPAND_DEFAULT')
   
+  // 代码块加载动画相关配置
+  const codeLoadingAnimation = siteConfig('CODE_LOADING_ANIMATION', true)
+  const codeRenderTimeout = siteConfig('CODE_RENDER_TIMEOUT', 3000)
+  const codeRenderDelay = siteConfig('CODE_RENDER_DELAY', 200)
+  
   // 使用 useRef 跟踪初始化状态，避免多次执行
   const initialized = useRef(false)
   const renderAttempts = useRef(0)
-  const maxRenderAttempts = 3 // 减少最大尝试次数
+  const maxRenderAttempts = 5 // 增加最大尝试次数
   const observersRef = useRef([]) // 存储所有 observer，便于清理
   const debounceTimerRef = useRef(null) // 防抖定时器
+  const loadingTimeoutRef = useRef(null) // 加载超时定时器
+  
+  // 代码块加载状态
+  const [isCodeLoading, setIsCodeLoading] = useState(false)
+  const [loadingCodeBlocks, setLoadingCodeBlocks] = useState(new Set())
 
   // 防抖渲染函数
   const debouncedRender = useCallback((renderFunction, delay = 150) => {
@@ -62,6 +72,67 @@ const PrismMac = () => {
     if (debounceTimerRef.current) {
       clearTimeout(debounceTimerRef.current)
     }
+    if (loadingTimeoutRef.current) {
+      clearTimeout(loadingTimeoutRef.current)
+    }
+  }, [])
+
+  // 显示代码块加载动画
+  const showCodeBlockLoading = useCallback((codeBlock) => {
+    if (!codeLoadingAnimation) return
+    
+    const loadingId = `loading-${Date.now()}-${Math.random()}`
+    const loadingElement = document.createElement('div')
+    loadingElement.className = 'code-block-loading'
+    loadingElement.setAttribute('data-loading-id', loadingId)
+    loadingElement.innerHTML = `
+      <div class="code-loading-container">
+        <div class="code-loading-header">
+          <div class="code-loading-dots">
+            <span class="code-loading-dot red"></span>
+            <span class="code-loading-dot yellow"></span>
+            <span class="code-loading-dot green"></span>
+          </div>
+          <div class="code-loading-title">
+            <div class="code-loading-skeleton"></div>
+          </div>
+        </div>
+        <div class="code-loading-content">
+          <div class="code-loading-line"></div>
+          <div class="code-loading-line"></div>
+          <div class="code-loading-line"></div>
+          <div class="code-loading-line"></div>
+          <div class="code-loading-line"></div>
+        </div>
+      </div>
+    `
+    
+    codeBlock.style.display = 'none'
+    codeBlock.classList.add('code-block-pending')
+    codeBlock.parentNode.insertBefore(loadingElement, codeBlock)
+    
+    setLoadingCodeBlocks(prev => new Set(prev).add(loadingId))
+    return loadingId
+  }, [codeLoadingAnimation])
+
+  // 隐藏代码块加载动画
+  const hideCodeBlockLoading = useCallback((loadingId) => {
+    const loadingElement = document.querySelector(`[data-loading-id="${loadingId}"]`)
+    if (loadingElement) {
+      const codeBlock = loadingElement.nextElementSibling
+      if (codeBlock) {
+        codeBlock.style.display = ''
+        codeBlock.classList.remove('code-block-pending')
+        codeBlock.classList.add('code-block-rendered')
+      }
+      loadingElement.remove()
+    }
+    
+    setLoadingCodeBlocks(prev => {
+      const newSet = new Set(prev)
+      newSet.delete(loadingId)
+      return newSet
+    })
   }, [])
 
   useEffect(() => {
@@ -73,6 +144,11 @@ const PrismMac = () => {
         // 1. 首先加载样式文件
         if (codeMacBar) {
           await loadExternalResource('/css/prism-mac-style.css', 'css')
+        }
+        
+        // 加载代码块加载动画样式
+        if (codeLoadingAnimation) {
+          await loadExternalResource('/css/code-loading.css', 'css')
         }
         
         // 2. 加载 Prism 主题样式
@@ -105,24 +181,93 @@ const PrismMac = () => {
       const codeBlocks = container?.getElementsByTagName('pre')
       
       if (container && codeBlocks && codeBlocks.length > 0) {
-        // DOM 已准备好，可以渲染
-        debouncedRender(() => {
-          renderAllCodeBlocks()
-          initialized.current = true
+        // 显示加载状态
+        if (codeLoadingAnimation) {
+          setIsCodeLoading(true)
+          
+          // 为每个代码块显示加载动画
+          Array.from(codeBlocks).forEach(codeBlock => {
+            if (codeBlock.classList.contains('notion-code') && !codeBlock.dataset.loadingShown) {
+              codeBlock.dataset.loadingShown = 'true'
+              showCodeBlockLoading(codeBlock)
+            }
+          })
+        }
+        
+        // DOM 已准备好，延迟渲染以确保完全加载
+        setTimeout(() => {
+          debouncedRender(async () => {
+            await renderAllCodeBlocks()
+            initialized.current = true
+            
+            // 隐藏加载状态
+            setTimeout(() => {
+              setIsCodeLoading(false)
+              // 清理所有加载动画，添加淡入效果
+              document.querySelectorAll('.code-block-loading').forEach(loading => {
+                const codeBlock = loading.nextElementSibling
+                if (codeBlock) {
+                  codeBlock.style.display = ''
+                  codeBlock.classList.remove('code-block-pending')
+                  codeBlock.classList.add('code-block-rendered')
+                }
+                loading.remove()
+              })
+              setLoadingCodeBlocks(new Set())
+            }, 150) // 稍微增加延迟，让渲染更平滑
+          }, codeRenderDelay)
         }, 100)
+        
+        // 设置超时保护
+        if (loadingTimeoutRef.current) {
+          clearTimeout(loadingTimeoutRef.current)
+        }
+        loadingTimeoutRef.current = setTimeout(() => {
+          if (isCodeLoading) {
+            console.warn('代码块渲染超时，强制完成')
+            setIsCodeLoading(false)
+            document.querySelectorAll('.code-block-loading').forEach(loading => {
+              const codeBlock = loading.nextElementSibling
+              if (codeBlock) {
+                codeBlock.style.display = ''
+                codeBlock.classList.remove('code-block-pending')
+                codeBlock.classList.add('code-block-rendered')
+              }
+              loading.remove()
+            })
+            setLoadingCodeBlocks(new Set())
+          }
+        }, codeRenderTimeout)
+        
       } else if (renderAttempts.current < maxRenderAttempts) {
         // DOM 还没准备好，延迟重试
         renderAttempts.current += 1
-        setTimeout(checkAndRenderWhenReady, 500) // 增加延迟间隔
+        setTimeout(checkAndRenderWhenReady, 800) // 增加延迟间隔
       }
     }
     
     // 渲染所有代码块
-    const renderAllCodeBlocks = () => {
-      // 批量处理，减少重排次数
-      renderPrismMac(codeLineNumbers)
-      renderMermaid(mermaidCDN)
-      renderCollapseCode(codeCollapse, codeCollapseExpandDefault)
+    const renderAllCodeBlocks = async () => {
+      try {
+        // 等待所有渲染完成
+        await Promise.all([
+          renderPrismMac(codeLineNumbers),
+          renderMermaid(mermaidCDN),
+          new Promise(resolve => {
+            renderCollapseCode(codeCollapse, codeCollapseExpandDefault)
+            resolve()
+          })
+        ])
+        
+        // 修复行号样式
+        if (codeLineNumbers) {
+          setTimeout(() => {
+            fixCodeLineStyle()
+          }, 100)
+        }
+      } catch (error) {
+        console.error('代码块渲染失败:', error)
+      }
     }
     
     // 启动初始化过程
@@ -134,7 +279,7 @@ const PrismMac = () => {
       initialized.current = false
       renderAttempts.current = 0
     }
-  }, [router, isDarkMode, debouncedRender, cleanupObservers, codeLineNumbers, codeMacBar, mermaidCDN, prismjsAutoLoader, prismjsPath, prismThemeSwitch, prismThemeDarkPath, prismThemeLightPath, prismThemePrefixPath, codeCollapse, codeCollapseExpandDefault])
+  }, [router, isDarkMode, debouncedRender, cleanupObservers, codeLineNumbers, codeMacBar, mermaidCDN, prismjsAutoLoader, prismjsPath, prismThemeSwitch, prismThemeDarkPath, prismThemeLightPath, prismThemePrefixPath, codeCollapse, codeCollapseExpandDefault, codeLoadingAnimation, codeRenderDelay, codeRenderTimeout, isCodeLoading, showCodeBlockLoading])
 
   // 监听 DOM 变化，处理动态加载的内容 - 优化版本
   useEffect(() => {
@@ -179,7 +324,17 @@ const PrismMac = () => {
     }
   }, [debouncedRender, codeLineNumbers, codeCollapse, codeCollapseExpandDefault])
 
-  return <></>
+  // 如果启用了加载动画且正在加载，显示全局加载状态提示
+  return (
+    <>
+      {isCodeLoading && codeLoadingAnimation && (
+        <div className="code-render-indicator">
+          <div className="spinner"></div>
+          <span className="text-sm">代码块渲染中...</span>
+        </div>
+      )}
+    </>
+  )
 }
 
 /**
@@ -373,61 +528,88 @@ function renderPrismMac(codeLineNumbers) {
   const container = document?.getElementById('notion-article')
   if (!container) return
 
-  // 使用 requestAnimationFrame 优化渲染性能
-  requestAnimationFrame(() => {
-    // Add line numbers
-    if (codeLineNumbers) {
-      const codeBlocks = container.getElementsByTagName('pre')
-      if (codeBlocks) {
-        Array.from(codeBlocks).forEach(item => {
-          if (!item.classList.contains('line-numbers')) {
-            item.classList.add('line-numbers')
-            item.style.whiteSpace = 'pre-wrap'
-          }
-        })
-      }
-    }
-
-    try {
-      // 确保 Prism 已加载
-      if (typeof Prism !== 'undefined') {
-        // 只高亮新添加的代码块，而不是所有代码块
-        const unprocessedBlocks = container.querySelectorAll('pre code:not(.prism-processed)')
-        if (unprocessedBlocks.length > 0) {
-          unprocessedBlocks.forEach(block => {
-            Prism.highlightElement(block)
-            block.classList.add('prism-processed')
-          })
-        }
-      }
-    } catch (err) {
-      console.error('代码渲染出错:', err)
-    }
-
-    // 添加 Mac 样式 UI - 延迟执行避免阻塞
+  // 等待所有资源加载完成后再渲染
+  return new Promise((resolve) => {
+    // 确保 DOM 完全渲染
     setTimeout(() => {
-      const codeToolBars = container.querySelectorAll('.code-toolbar:not(.mac-styled)')
-      if (codeToolBars && codeToolBars.length > 0) {
-        Array.from(codeToolBars).forEach(item => {
-          // 标记为已处理
-          item.classList.add('mac-styled')
-          
-          // 检查是否已经有 pre-mac 元素
-          if (!item.querySelector('.pre-mac')) {
-            const preMac = document.createElement('div')
-            preMac.classList.add('pre-mac')
-            preMac.innerHTML = '<span></span><span></span><span></span>'
-            item.appendChild(preMac)
+      // 使用 requestAnimationFrame 优化渲染性能
+      requestAnimationFrame(() => {
+        // Add line numbers
+        if (codeLineNumbers) {
+          const codeBlocks = container.getElementsByTagName('pre')
+          if (codeBlocks) {
+            Array.from(codeBlocks).forEach(item => {
+              if (!item.classList.contains('line-numbers')) {
+                item.classList.add('line-numbers')
+                item.style.whiteSpace = 'pre-wrap'
+              }
+            })
           }
-        })
-      }
-      
-      // 修复行号样式
-      if (codeLineNumbers) {
-        fixCodeLineStyle()
-      }
-    }, 50)
+        }
+
+        try {
+          // 确保 Prism 已加载
+          if (typeof Prism !== 'undefined') {
+            // 只高亮新添加的代码块，而不是所有代码块
+            const unprocessedBlocks = container.querySelectorAll('pre code:not(.prism-processed)')
+            if (unprocessedBlocks.length > 0) {
+              // 批量处理代码高亮
+              const highlightPromises = Array.from(unprocessedBlocks).map(block => {
+                return new Promise((blockResolve) => {
+                  try {
+                    Prism.highlightElement(block)
+                    block.classList.add('prism-processed')
+                    blockResolve()
+                  } catch (err) {
+                    console.warn('代码块高亮失败:', err)
+                    blockResolve()
+                  }
+                })
+              })
+              
+              // 等待所有代码块高亮完成
+              Promise.all(highlightPromises).then(() => {
+                // 延迟添加 Mac 样式，确保代码高亮完成
+                setTimeout(() => {
+                  addMacStyleUI(container)
+                  resolve()
+                }, 100)
+              })
+            } else {
+              addMacStyleUI(container)
+              resolve()
+            }
+          } else {
+            console.warn('Prism 未加载，跳过代码高亮')
+            addMacStyleUI(container)
+            resolve()
+          }
+        } catch (err) {
+          console.error('代码渲染出错:', err)
+          resolve()
+        }
+      })
+    }, 50) // 给 DOM 一点时间完成渲染
   })
+}
+
+// 添加 Mac 样式 UI 的独立函数
+function addMacStyleUI(container) {
+  const codeToolBars = container.querySelectorAll('.code-toolbar:not(.mac-styled)')
+  if (codeToolBars && codeToolBars.length > 0) {
+    Array.from(codeToolBars).forEach(item => {
+      // 标记为已处理
+      item.classList.add('mac-styled')
+      
+      // 检查是否已经有 pre-mac 元素
+      if (!item.querySelector('.pre-mac')) {
+        const preMac = document.createElement('div')
+        preMac.classList.add('pre-mac')
+        preMac.innerHTML = '<span></span><span></span><span></span>'
+        item.appendChild(preMac)
+      }
+    })
+  }
 }
 
 /**

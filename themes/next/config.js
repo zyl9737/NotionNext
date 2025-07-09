@@ -34,8 +34,13 @@ const CONFIG = {
 
   NEXT_ARTICLE_RELATE_POSTS: true, // 相关文章推荐
   NEXT_ARTICLE_COPYRIGHT: true, // 文章版权声明
-  NEXT_ARTICLE_NOT_BY_AI: false, // 显示非AI写作
-  NEXT_ARTICLE_INFO: true // 显示文章信息
+  NEXT_ARTICLE_NOT_BY_AI: true, // 显示非AI写作
+  NEXT_ARTICLE_INFO: true, // 显示文章信息
+
+  // 代码块渲染相关
+  NEXT_CODE_LOADING_ANIMATION: true, // 代码块加载时显示动画
+  NEXT_CODE_RENDER_TIMEOUT: 3000, // 代码块渲染超时时间（毫秒）
+  NEXT_CODE_RENDER_DELAY: 200 // 代码块渲染延迟时间（毫秒）
 }
 
 export default CONFIG
