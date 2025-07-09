@@ -240,7 +240,7 @@ const LayoutBase = props => {
 
 /**
  * 首页
- * 重定向到某个文章详情页
+ * 根据配置显示相应内容或重定向到某个文章详情页
  * @param {*} props
  * @returns
  */
@@ -251,8 +251,8 @@ const LayoutIndex = props => {
 
   useEffect(() => {
     const tryRedirect = async () => {
-      if (!hasRedirected) {
-        // 仅当未重定向时执行
+      if (!hasRedirected && index && index !== 'archive') {
+        // 仅当未重定向时执行，且不是archive页面
         setHasRedirected(true) // 更新状态，防止多次执行
 
         // 重定向到指定文章
@@ -277,13 +277,18 @@ const LayoutIndex = props => {
       }
     }
 
-    if (index) {
+    if (index && index !== 'archive') {
       console.log('重定向', index)
       tryRedirect()
     } else {
       console.log('无重定向', index)
     }
-  }, [index, hasRedirected]) // 将 hasRedirected 作为依赖确保状态变更时更新
+  }, [index, hasRedirected, router]) // 将 hasRedirected 作为依赖确保状态变更时更新
+
+  // 如果配置为archive，直接显示归档页面内容
+  if (index === 'archive') {
+    return <LayoutArchive {...props} />
+  }
 
   return null // 不渲染任何内容
 }

@@ -83,12 +83,13 @@ const NavPostList = props => {
     )
   }
   // 如果href
-  const href = siteConfig('GITBOOK_INDEX_PAGE') + ''
+  const indexPage = siteConfig('GITBOOK_INDEX_PAGE') + ''
+  const href = indexPage === 'archive' ? '/' : (indexPage.indexOf('/') !== 0 ? '/' + indexPage : indexPage)
 
   const homePost = {
     id: '-1',
     title: siteConfig('DESCRIPTION'),
-    href: href.indexOf('/') !== 0 ? '/' + href : href
+    href: href
   }
 
   return (

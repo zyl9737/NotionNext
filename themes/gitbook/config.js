@@ -1,5 +1,5 @@
 const CONFIG = {
-  GITBOOK_INDEX_PAGE: 'archive', // 文档首页显示的文章，请确此路径包含在您的notion数据库中
+  GITBOOK_INDEX_PAGE: 'archive', // 文档首页显示的内容，'archive'将直接显示归档页面，其它值将重定向到对应slug的文章
 
   GITBOOK_AUTO_SORT: process.env.NEXT_PUBLIC_GITBOOK_AUTO_SORT || true, // 是否自动按分类名 归组排序文章；自动归组可能会打乱您Notion中的文章顺序
 

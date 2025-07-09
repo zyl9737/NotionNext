@@ -10,10 +10,13 @@ import CONFIG from '../config'
  */
 export default function LogoBar(props) {
   const { siteInfo } = props
+  const indexPage = siteConfig('GITBOOK_INDEX_PAGE', '', CONFIG)
+  const href = indexPage === 'archive' ? '/' : `/${indexPage}`
+  
   return (
     <div id='logo-wrapper' className='w-full flex items-center mr-2'>
       <Link
-        href={`/${siteConfig('GITBOOK_INDEX_PAGE', '', CONFIG)}`}
+        href={href}
         className='flex text-lg font-bold md:text-2xl dark:text-gray-200'>
         <LazyImage
           src={siteInfo?.icon}
