@@ -12,6 +12,7 @@ import DashboardHeader from '@/components/ui/dashboard/DashboardHeader'
 import { siteConfig } from '@/lib/config'
 import { useGlobal } from '@/lib/global'
 import { isBrowser } from '@/lib/utils'
+import { formatDateFmt } from '@/lib/utils/formatDate'
 import { getShortId } from '@/lib/utils/pageId'
 import { SignIn, SignUp } from '@clerk/nextjs'
 import dynamic from 'next/dynamic'
@@ -287,7 +288,47 @@ const LayoutIndex = props => {
 
   // 如果配置为archive，直接显示归档页面内容
   if (index === 'archive') {
-    return <LayoutArchive {...props} />
+    // 构建archivePosts数据，和archive页面保持一致的逻辑
+    const posts = props.posts || []
+    if (!Array.isArray(posts) || posts.length === 0) {
+      // 如果没有文章，返回空的归档页面
+      const archiveProps = {
+        ...props,
+        archivePosts: {}
+      }
+      return <LayoutArchive {...archiveProps} />
+    }
+
+    const postsSortByDate = Object.create(posts)
+    postsSortByDate.sort((a, b) => {
+      return (b?.publishDate || 0) - (a?.publishDate || 0)
+    })
+
+    const archivePosts = {}
+    postsSortByDate.forEach(post => {
+      // 确保post和publishDate都存在
+      if (post && post.publishDate) {
+        try {
+          const date = formatDateFmt(post.publishDate, 'yyyy-MM')
+          if (date) {
+            if (archivePosts[date]) {
+              archivePosts[date].push(post)
+            } else {
+              archivePosts[date] = [post]
+            }
+          }
+        } catch (error) {
+          console.warn('处理文章日期时出错:', error, post)
+        }
+      }
+    })
+
+    const archiveProps = {
+      ...props,
+      archivePosts
+    }
+    
+    return <LayoutArchive {...archiveProps} />
   }
 
   return null // 不渲染任何内容
@@ -416,16 +457,47 @@ const LayoutSearch = props => {
 const LayoutArchive = props => {
   const { archivePosts } = props
 
+  // 增强错误处理：确保archivePosts存在且不为空
+  if (!archivePosts || typeof archivePosts !== 'object') {
+    return (
+      <div className='mb-10 pb-20 md:py-12 py-3 min-h-full'>
+        <div className='text-center text-gray-500 dark:text-gray-400'>
+          暂无归档内容
+        </div>
+      </div>
+    )
+  }
+
+  const archiveKeys = Object.keys(archivePosts)
+  
+  if (archiveKeys.length === 0) {
+    return (
+      <div className='mb-10 pb-20 md:py-12 py-3 min-h-full'>
+        <div className='text-center text-gray-500 dark:text-gray-400'>
+          暂无归档内容
+        </div>
+      </div>
+    )
+  }
+
   return (
     <>
       <div className='mb-10 pb-20 md:py-12 py-3  min-h-full'>
-        {Object.keys(archivePosts)?.map(archiveTitle => (
-          <BlogArchiveItem
-            key={archiveTitle}
-            archiveTitle={archiveTitle}
-            archivePosts={archivePosts}
-          />
-        ))}
+        {archiveKeys.map(archiveTitle => {
+          // 确保每个archiveTitle对应的数组存在且不为空
+          const posts = archivePosts[archiveTitle]
+          if (!posts || !Array.isArray(posts) || posts.length === 0) {
+            return null
+          }
+          
+          return (
+            <BlogArchiveItem
+              key={archiveTitle}
+              archiveTitle={archiveTitle}
+              archivePosts={archivePosts}
+            />
+          )
+        })}
       </div>
     </>
   )
