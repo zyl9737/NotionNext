@@ -116,7 +116,7 @@ const LayoutBase = props => {
 
   useEffect(() => {
     setFilteredNavPages(getNavPagesWithLatest(allNavPages, latestPosts, post))
-  }, [router])
+  }, [router, allNavPages, latestPosts, post])
 
   const GITBOOK_LOADING_COVER = siteConfig(
     'GITBOOK_LOADING_COVER',
@@ -174,13 +174,21 @@ const LayoutBase = props => {
               id='container-inner'
               className={`w-full ${fullWidth ? 'px-5' : 'max-w-5xl px-3 lg:px-0'} justify-center mx-auto`}>
               {slotTop}
-              <WWAds className='w-full' orientation='horizontal' />
+              
+              {/* 懒加载广告组件 */}
+              <div className="ad-container">
+                <WWAds className='w-full' orientation='horizontal' />
+              </div>
 
               {children}
 
               {/* Google广告 */}
               <AdSlot type='in-article' />
-              <WWAds className='w-full' orientation='horizontal' />
+              
+              {/* 懒加载广告组件 */}
+              <div className="ad-container">
+                <WWAds className='w-full' orientation='horizontal' />
+              </div>
             </div>
 
             {/* 底部 */}
@@ -265,8 +273,6 @@ const LayoutIndex = props => {
             '#article-wrapper #notion-article'
           )
           if (!article) {
-            console.log('请检查您的Notion数据库中是否包含此slug页面： ', index)
-
             // 显示错误信息
             const containerInner = document.querySelector(
               '#theme-gitbook #container-inner'
@@ -279,21 +285,16 @@ const LayoutIndex = props => {
     }
 
     if (index && index !== 'archive') {
-      console.log('重定向', index)
       tryRedirect()
-    } else {
-      console.log('无重定向', index)
     }
   }, [index, hasRedirected, router]) // 将 hasRedirected 作为依赖确保状态变更时更新
 
   // 如果配置为archive，直接显示归档页面内容
   if (index === 'archive') {
-    // 获取所有文章，不受分页限制
-    const allPosts = props.allPages?.filter(
-      page => page.type === 'Post' && page.status === 'Published'
-    ) || props.posts || []
-    
-    console.log('归档模式：获取到的文章数量:', allPosts.length)
+    // 获取所有文章，优先使用 allPosts（完整列表），其次使用 allPages，最后使用 posts
+    const allPosts = props.allPosts || 
+                     props.allPages?.filter(page => page.type === 'Post' && page.status === 'Published') || 
+                     props.posts || []
     
     if (!Array.isArray(allPosts) || allPosts.length === 0) {
       // 如果没有文章，返回空的归档页面
@@ -327,8 +328,6 @@ const LayoutIndex = props => {
         }
       }
     })
-
-    console.log('归档模式：构建的归档数据:', Object.keys(archivePosts))
 
     const archiveProps = {
       ...props,
@@ -384,7 +383,7 @@ const LayoutSlug = props => {
         }
       }, waiting404)
     }
-  }, [post])
+  }, [post, router, waiting404])
   return (
     <>
       <Head>
@@ -528,7 +527,7 @@ const Layout404 = props => {
         })
       }
     }, 3000)
-  }, [])
+  }, [router])
 
   return (
     <>

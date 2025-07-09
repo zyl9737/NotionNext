@@ -1,6 +1,6 @@
 import { siteConfig } from '@/lib/config'
 import Head from 'next/head'
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 /**
  * 图片懒加载
@@ -31,13 +31,14 @@ export default function LazyImage({
   /**
    * 占位图加载成功
    */
-  const handleThumbnailLoaded = () => {
+  const handleThumbnailLoaded = useCallback(() => {
     if (typeof onLoad === 'function') {
       // onLoad() // 触发传递的onLoad回调函数
     }
-  }
+  }, [onLoad])
+  
   // 原图加载完成
-  const handleImageLoaded = img => {
+  const handleImageLoaded = useCallback(img => {
     if (typeof onLoad === 'function') {
       onLoad() // 触发传递的onLoad回调函数
     }
@@ -45,11 +46,12 @@ export default function LazyImage({
     if (imageRef.current) {
       imageRef.current.classList.remove('lazy-image-placeholder')
     }
-  }
+  }, [onLoad])
+  
   /**
    * 图片加载失败回调
    */
-  const handleImageError = () => {
+  const handleImageError = useCallback(() => {
     if (imageRef.current) {
       // 尝试加载 placeholderSrc，如果失败则加载 defaultPlaceholderSrc
       if (imageRef.current.src !== placeholderSrc && placeholderSrc) {
@@ -62,7 +64,7 @@ export default function LazyImage({
         imageRef.current.classList.remove('lazy-image-placeholder')
       }
     }
-  }
+  }, [placeholderSrc, defaultPlaceholderSrc])
 
   useEffect(() => {
     const adjustedImageSrc =
@@ -85,24 +87,31 @@ export default function LazyImage({
           }
         })
       },
-      { rootMargin: '50px 0px' } // 轻微提前加载
-    )
-    if (imageRef.current) {
-      observer.observe(imageRef.current)
-    }
-    return () => {
-      if (imageRef.current) {
-        observer.unobserve(imageRef.current)
+      { 
+        rootMargin: '50px 0px', // 轻微提前加载
+        threshold: 0.1 // 当图片 10% 可见时开始加载
       }
+    )
+    
+    const currentRef = imageRef.current
+    if (currentRef) {
+      observer.observe(currentRef)
     }
-  }, [src, maxWidth])
+    
+    return () => {
+      if (currentRef) {
+        observer.unobserve(currentRef)
+      }
+      observer.disconnect() // 清理 observer
+    }
+  }, [src, maxWidth, defaultPlaceholderSrc, handleImageError, handleImageLoaded])
 
   // 动态添加width、height和className属性，仅在它们为有效值时添加
   const imgProps = {
     ref: imageRef,
     src: currentSrc,
     'data-src': src, // 存储原始图片地址
-    alt: alt || 'Lazy loaded image',
+    alt: alt || '', // 确保总是有 alt 属性
     onLoad: handleThumbnailLoaded,
     onError: handleImageError,
     className: `${className || ''} lazy-image-placeholder`,

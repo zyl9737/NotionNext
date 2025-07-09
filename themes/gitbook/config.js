@@ -6,6 +6,9 @@ const CONFIG = {
   GITBOOK_LATEST_POST_RED_BADGE:
     process.env.NEXT_PUBLIC_GITBOOK_LATEST_POST_RED_BADGE || false, // 是否给最新文章显示红点
 
+  // 性能优化选项
+  GITBOOK_ENABLE_PERFORMANCE_MODE: process.env.NEXT_PUBLIC_GITBOOK_PERFORMANCE_MODE || true, // 启用性能优化模式，减少长文卡顿
+
   // 菜单
   GITBOOK_MENU_CATEGORY: false, // 显示分类
   GITBOOK_BOOK_MENU_TAG: false, // 显示标签

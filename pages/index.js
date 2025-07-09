@@ -34,6 +34,9 @@ export async function getStaticProps(req) {
     page => page.type === 'Post' && page.status === 'Published'
   )
 
+  // 保存完整的文章列表供主题使用（特别是归档页面）
+  props.allPosts = [...(props.posts || [])]
+
   // 处理分页
   if (siteConfig('POST_LIST_STYLE') === 'scroll') {
     // 滚动列表默认给前端返回所有数据

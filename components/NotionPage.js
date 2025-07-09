@@ -37,51 +37,58 @@ const NotionPage = ({ post, className }) => {
 
   // 页面文章发生变化时会执行的勾子
   useEffect(() => {
-    // 相册视图点击禁止跳转，只能放大查看图片
-    if (POST_DISABLE_GALLERY_CLICK) {
-      // 针对页面中的gallery视图，点击后是放大图片还是跳转到gallery的内部页面
-      processGalleryImg(zoomRef?.current)
-    }
+    // 防抖函数，避免频繁执行
+    const timeoutId = setTimeout(() => {
+      // 相册视图点击禁止跳转，只能放大查看图片
+      if (POST_DISABLE_GALLERY_CLICK) {
+        // 针对页面中的gallery视图，点击后是放大图片还是跳转到gallery的内部页面
+        processGalleryImg(zoomRef?.current)
+      }
 
-    // 页内数据库点击禁止跳转，只能查看
-    if (POST_DISABLE_DATABASE_CLICK) {
-      processDisableDatabaseUrl()
-    }
+      // 页内数据库点击禁止跳转，只能查看
+      if (POST_DISABLE_DATABASE_CLICK) {
+        processDisableDatabaseUrl()
+      }
 
-    /**
-     * 放大查看图片时替换成高清图像
-     */
-    const observer = new MutationObserver((mutationsList, observer) => {
-      mutationsList.forEach(mutation => {
-        if (
-          mutation.type === 'attributes' &&
-          mutation.attributeName === 'class'
-        ) {
-          if (mutation.target.classList.contains('medium-zoom-image--opened')) {
-            // 等待动画完成后替换为更高清的图像
-            setTimeout(() => {
-              // 获取该元素的 src 属性
-              const src = mutation?.target?.getAttribute('src')
-              //   替换为更高清的图像
-              mutation?.target?.setAttribute(
-                'src',
-                compressImage(src, IMAGE_ZOOM_IN_WIDTH)
-              )
-            }, 800)
+      /**
+       * 放大查看图片时替换成高清图像
+       */
+      const observer = new MutationObserver((mutationsList, observer) => {
+        mutationsList.forEach(mutation => {
+          if (
+            mutation.type === 'attributes' &&
+            mutation.attributeName === 'class'
+          ) {
+            if (mutation.target.classList.contains('medium-zoom-image--opened')) {
+              // 等待动画完成后替换为更高清的图像
+              setTimeout(() => {
+                // 获取该元素的 src 属性
+                const src = mutation?.target?.getAttribute('src')
+                //   替换为更高清的图像
+                mutation?.target?.setAttribute(
+                  'src',
+                  compressImage(src, IMAGE_ZOOM_IN_WIDTH)
+                )
+              }, 800)
+            }
           }
-        }
+        })
       })
-    })
 
-    // 监视页面元素和属性变化
-    observer.observe(document.body, {
-      attributes: true,
-      subtree: true,
-      attributeFilter: ['class']
-    })
+      // 监视页面元素和属性变化
+      observer.observe(document.body, {
+        attributes: true,
+        subtree: true,
+        attributeFilter: ['class']
+      })
+
+      return () => {
+        observer.disconnect()
+      }
+    }, 100) // 100ms 防抖
 
     return () => {
-      observer.disconnect()
+      clearTimeout(timeoutId)
     }
   }, [post])
 

@@ -27,6 +27,10 @@ module.exports = {
   CODE_COLLAPSE: process.env.NEXT_PUBLIC_CODE_COLLAPSE || true, // 是否支持折叠代码框
   CODE_COLLAPSE_EXPAND_DEFAULT:
     process.env.NEXT_PUBLIC_CODE_COLLAPSE_EXPAND_DEFAULT || true, // 折叠代码默认是展开状态
+  
+  // 性能优化相关
+  CODE_RENDER_PERFORMANCE_MODE: process.env.NEXT_PUBLIC_CODE_PERFORMANCE_MODE || true, // 启用代码渲染性能优化模式
+  CODE_HIGHLIGHT_DEBOUNCE_DELAY: process.env.NEXT_PUBLIC_CODE_HIGHLIGHT_DEBOUNCE || 150, // 代码高亮防抖延迟（毫秒）
   // Mermaid 图表CDN
   MERMAID_CDN:
     process.env.NEXT_PUBLIC_MERMAID_CDN ||
