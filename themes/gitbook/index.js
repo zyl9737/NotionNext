@@ -288,9 +288,14 @@ const LayoutIndex = props => {
 
   // 如果配置为archive，直接显示归档页面内容
   if (index === 'archive') {
-    // 构建archivePosts数据，和archive页面保持一致的逻辑
-    const posts = props.posts || []
-    if (!Array.isArray(posts) || posts.length === 0) {
+    // 获取所有文章，不受分页限制
+    const allPosts = props.allPages?.filter(
+      page => page.type === 'Post' && page.status === 'Published'
+    ) || props.posts || []
+    
+    console.log('归档模式：获取到的文章数量:', allPosts.length)
+    
+    if (!Array.isArray(allPosts) || allPosts.length === 0) {
       // 如果没有文章，返回空的归档页面
       const archiveProps = {
         ...props,
@@ -299,7 +304,7 @@ const LayoutIndex = props => {
       return <LayoutArchive {...archiveProps} />
     }
 
-    const postsSortByDate = Object.create(posts)
+    const postsSortByDate = Object.create(allPosts)
     postsSortByDate.sort((a, b) => {
       return (b?.publishDate || 0) - (a?.publishDate || 0)
     })
@@ -322,6 +327,8 @@ const LayoutIndex = props => {
         }
       }
     })
+
+    console.log('归档模式：构建的归档数据:', Object.keys(archivePosts))
 
     const archiveProps = {
       ...props,

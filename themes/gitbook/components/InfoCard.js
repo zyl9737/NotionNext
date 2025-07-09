@@ -1,6 +1,5 @@
 import LazyImage from '@/components/LazyImage'
 import Router from 'next/router'
-import SocialButton from './SocialButton'
 import { siteConfig } from '@/lib/config'
 
 const InfoCard = (props) => {
@@ -18,7 +17,6 @@ const InfoCard = (props) => {
          </div>
         <div className='text-xl py-2 hover:scale-105 transform duration-200 flex justify-center dark:text-gray-300'>{siteConfig('AUTHOR')}</div>
         <div className='font-light text-gray-600 mb-2 hover:scale-105 transform duration-200 flex justify-center dark:text-gray-400'>{siteConfig('BIO')}</div>
-        <SocialButton/>
     </div>
   </div>
 }
