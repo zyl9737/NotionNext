@@ -28,6 +28,27 @@ const Style = () => {
         background-size: 100% 2px;
         color: #4e80ee;
       }
+      /* 引用样式优化 */
+      #theme-next .notion-quote {
+        background: #f7f7f7;
+        border-left: 3px solid #d1d5db;
+        padding: 1rem 1.5rem;
+        margin: 1.5rem 0;
+        color: #4b5563;
+        border-radius: 4px;
+        font-size: 1em; /* 明确字体大小与正文一致 */
+      }
+
+      /* 移除引用块内段落的默认边距 */
+      #theme-next .notion-quote p {
+          margin: 0;
+      }
+
+      #theme-next .dark .notion-quote {
+        background: #2a2a2a;
+        border-left-color: #4a4a4a;
+        color: #d1d5db;
+      }
     `}</style>
   )
 }
