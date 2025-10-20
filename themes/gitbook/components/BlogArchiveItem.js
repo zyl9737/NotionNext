@@ -1,4 +1,4 @@
-import Link from 'next/link'
+import SmartLink from '@/components/SmartLink'
 
 /**
  * 归档分组
@@ -35,12 +35,12 @@ export default function BlogArchiveItem({ archiveTitle, archivePosts }) {
               <div id={post?.publishDay}>
                 <span className='text-gray-400'>{post.date?.start_date || post.publishDate}</span>{' '}
                 &nbsp;
-                <Link
+                <SmartLink
                   passHref
                   href={post?.href}
                   className='dark:text-gray-400  dark:hover:text-gray-300 overflow-x-hidden hover:underline cursor-pointer text-gray-600'>
                   {post.title}
-                </Link>
+                </SmartLink>
               </div>
             </li>
           )
