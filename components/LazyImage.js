@@ -127,8 +127,8 @@ export default function LazyImage({
     }
 
     return () => {
-      if (currentRef) {
-        observer.unobserve(currentRef)
+      if (imageRef.current) {
+        observer.unobserve(imageRef.current)
       }
       observer.disconnect() // 清理 observer
     }
