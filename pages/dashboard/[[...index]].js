@@ -1,6 +1,6 @@
 import BLOG from '@/blog.config'
 import { siteConfig } from '@/lib/config'
-import { getGlobalData, getPost, getPostBlocks } from '@/lib/db/getSiteData'
+import { fetchGlobalAllData, fetchPostDetail, getPostBlocks } from '@/lib/db/SiteDataApi'
 import { DynamicLayout } from '@/themes/theme'
 
 /**
@@ -18,7 +18,7 @@ export async function getStaticProps({ locale }) {
   const prefix = 'dashboard'
   let fullSlug = 'dashboard'
   const from = `slug-props-${fullSlug}`
-  const props = await getGlobalData({ from, locale })
+  const props = await fetchGlobalAllData({ from, locale })
   if (siteConfig('PSEUDO_STATIC', false, props.NOTION_CONFIG)) {
     if (!fullSlug.endsWith('.html')) {
       fullSlug += '.html'
@@ -34,7 +34,7 @@ export async function getStaticProps({ locale }) {
   if (!props?.post) {
     const pageId = prefix
     if (pageId.length >= 32) {
-      const post = await getPost(pageId)
+      const post = await fetchPostDetail(pageId)
       props.post = post
     }
   }
@@ -46,16 +46,11 @@ export async function getStaticProps({ locale }) {
       revalidate: process.env.EXPORT
         ? undefined
         : siteConfig(
-            'NEXT_REVALIDATE_SECOND',
-            BLOG.NEXT_REVALIDATE_SECOND,
-            props.NOTION_CONFIG
-          )
+          'NEXT_REVALIDATE_SECOND',
+          BLOG.NEXT_REVALIDATE_SECOND,
+          props.NOTION_CONFIG
+        )
     }
-  }
-
-  // 文章内容加载
-  if (!props?.post?.blockMap) {
-    props.post.blockMap = await getPostBlocks(props.post.id, from)
   }
 
   delete props.allPages
@@ -64,10 +59,10 @@ export async function getStaticProps({ locale }) {
     revalidate: process.env.EXPORT
       ? undefined
       : siteConfig(
-          'NEXT_REVALIDATE_SECOND',
-          BLOG.NEXT_REVALIDATE_SECOND,
-          props.NOTION_CONFIG
-        )
+        'NEXT_REVALIDATE_SECOND',
+        BLOG.NEXT_REVALIDATE_SECOND,
+        props.NOTION_CONFIG
+      )
   }
 }
 
