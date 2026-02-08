@@ -116,8 +116,7 @@ const NotionPage = ({ post, className }) => {
     return () => clearTimeout(timer)
   }, [post])
 
-  const cleanBlockMap = cleanBlocksWithWarn(post.blockMap);
-
+  const cleanBlockMap = cleanBlocksWithWarn(post?.blockMap);
 
   return (
     <div
@@ -144,6 +143,7 @@ const NotionPage = ({ post, className }) => {
 }
 
 function cleanBlocksWithWarn(blockMap) {
+  if(!blockMap) return blockMap;
   const cleanedBlocks = {};
   const removedBlockIds = [];
 
