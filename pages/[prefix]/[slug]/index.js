@@ -2,6 +2,7 @@ import BLOG from '@/blog.config'
 import { siteConfig } from '@/lib/config'
 import { fetchGlobalAllData, resolvePostProps } from '@/lib/db/SiteDataApi'
 import Slug from '..'
+import { checkSlugHasOneSlash } from '@/lib/utils/post'
 
 /**
  * 根据notion的slug访问页面

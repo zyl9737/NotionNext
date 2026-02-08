@@ -6,7 +6,7 @@ import { fetchGlobalAllData, resolvePostProps } from '@/lib/db/SiteDataApi'
 import { useGlobal } from '@/lib/global'
 import { getPageTableOfContents } from '@/lib/db/notion/getPageTableOfContents'
 import { getPasswordQuery } from '@/lib/utils/password'
-import { checkSlugHasMorThanTwoSlash, processPostData } from '@/lib/utils/post'
+import { checkSlugHasMorThanTwoSlash, checkSlugHasNoSlash, processPostData } from '@/lib/utils/post'
 import { DynamicLayout } from '@/themes/theme'
 import md5 from 'js-md5'
 import { useRouter } from 'next/router'
@@ -119,7 +119,6 @@ export async function getStaticProps({ params: { prefix }, locale }) {
     prefix,
     locale,
   })
-
   return {
     props,
     revalidate: process.env.EXPORT

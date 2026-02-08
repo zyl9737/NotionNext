@@ -1,6 +1,6 @@
 import BLOG from '@/blog.config'
 import { siteConfig } from '@/lib/config'
-import { fetchGlobalAllData, fetchPostDetail, getPostBlocks } from '@/lib/db/SiteDataApi'
+import { resolvePostProps } from '@/lib/db/SiteDataApi'
 import { DynamicLayout } from '@/themes/theme'
 
 /**
@@ -16,44 +16,11 @@ const Dashboard = props => {
 
 export async function getStaticProps({ locale }) {
   const prefix = 'dashboard'
-  let fullSlug = 'dashboard'
-  const from = `slug-props-${fullSlug}`
-  const props = await fetchGlobalAllData({ from, locale })
-  if (siteConfig('PSEUDO_STATIC', false, props.NOTION_CONFIG)) {
-    if (!fullSlug.endsWith('.html')) {
-      fullSlug += '.html'
-    }
-  }
-
-  // 在列表内查找文章
-  props.post = props?.allPages?.find(p => {
-    return p.type.indexOf('Menu') < 0 && p.slug === fullSlug
+  const props = await resolvePostProps({
+    prefix,
+    locale,
   })
 
-  // 处理非列表内文章的内信息
-  if (!props?.post) {
-    const pageId = prefix
-    if (pageId.length >= 32) {
-      const post = await fetchPostDetail(pageId)
-      props.post = post
-    }
-  }
-  // 无法获取文章
-  if (!props?.post) {
-    props.post = null
-    return {
-      props,
-      revalidate: process.env.EXPORT
-        ? undefined
-        : siteConfig(
-          'NEXT_REVALIDATE_SECOND',
-          BLOG.NEXT_REVALIDATE_SECOND,
-          props.NOTION_CONFIG
-        )
-    }
-  }
-
-  delete props.allPages
   return {
     props,
     revalidate: process.env.EXPORT
