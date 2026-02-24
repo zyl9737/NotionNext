@@ -14,6 +14,13 @@ export const getServerSideProps = async ({ res }) => {
     'public, s-maxage=7200, stale-while-revalidate=3600'
   )
 
+  // 设置超时保护（30秒内必须完成）
+  const timeoutPromise = new Promise((resolve) => {
+    setTimeout(() => {
+      resolve({ timeout: true })
+    }, 28000) // 28秒时返回备用内容，留2秒给网关
+  })
+
   try {
     const siteIds = BLOG.NOTION_PAGE_ID.split(',')
     const id = extractLangId(siteIds[0])
