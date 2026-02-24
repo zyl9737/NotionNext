@@ -1,6 +1,6 @@
 // pages/rss/feed.xml.js
 import BLOG from '@/blog.config'
-import { generateRss } from '@/lib/rss'
+import { generateRss } from '@/lib/utils/rss'
 import { extractLangId } from '@/lib/utils/pageId'
 
 export const getServerSideProps = async ({ req, res }) => {
