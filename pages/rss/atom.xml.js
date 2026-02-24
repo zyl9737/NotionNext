@@ -1,87 +1,95 @@
 // pages/rss/atom.xml.js
+//
+// 重要：不要在此文件顶部 import 任何涉及 SiteDataApi / cache_manager / ioredis 的模块！
+// 否则 webpack 静态分析会打包 ioredis → 需要 Node 内置模块 'net' → 构建失败。
+// 所有重量级依赖一律通过 dynamic import() 在运行时加载。
+//
 import BLOG from '@/blog.config'
-import { generateRss } from '@/lib/utils/rss'
 import { extractLangId } from '@/lib/utils/pageId'
 
-export const getServerSideProps = async ({ req, res }) => {
-  // 设置缓存头
+export const getServerSideProps = async ({ res }) => {
+  res.setHeader('Content-Type', 'application/atom+xml; charset=utf-8')
   res.setHeader(
     'Cache-Control',
-    'public, max-age=3600, stale-while-revalidate=59'
+    'public, s-maxage=7200, stale-while-revalidate=3600'
   )
-  
-  // 设置内容类型为XML
-  res.setHeader('Content-Type', 'application/atom+xml; charset=utf-8')
 
   try {
-    // 获取所有站点数据
     const siteIds = BLOG.NOTION_PAGE_ID.split(',')
-    const siteId = siteIds[0]
-    const id = extractLangId(siteId)
-    
-    console.log('[Atom] 开始获取站点数据...')
-    
-    // 使用 dynamic import 避免在编译时引入可能导致问题的依赖
-    const { getGlobalData } = await import('@/lib/db/getSiteData')
-    
-    const siteData = await getGlobalData({
+    const id = extractLangId(siteIds[0])
+
+    // ---- 动态导入，切断 webpack 静态分析链 ----
+    const { fetchGlobalAllData } = await import('@/lib/db/SiteDataApi')
+    const siteData = await fetchGlobalAllData({
       pageId: id,
-      from: 'atom-feed',
-      // 避免加载完整文章内容，减少依赖
-      simplifySiteData: true
+      from: 'atom-feed'
     })
 
     if (!siteData) {
-      console.error('[Atom] 无法获取站点数据')
-      res.statusCode = 500
-      res.end('Unable to fetch site data')
+      res.statusCode = 200
+      res.end(fallbackAtom())
       return { props: {} }
     }
 
-    // 过滤出已发布的文章
-    const allPages = siteData.allPages || []
-    const publishedPosts = allPages
-      .filter(post => 
-        post && 
-        post.status === BLOG.NOTION_PROPERTY_NAME.status_publish &&
-        post.type === BLOG.NOTION_PROPERTY_NAME.type_post &&
-        post.title
+    const posts = (siteData.allPages || [])
+      .filter(
+        p => p && p.status === 'Published' && p.type === 'Post' && p.title
       )
-      .sort((a, b) => new Date(b.publishDay || b.date) - new Date(a.publishDay || a.date))
+      .sort(
+        (a, b) =>
+          new Date(b.publishDay || b.date) - new Date(a.publishDay || a.date)
+      )
       .slice(0, 20)
 
-    console.log(`[Atom] 找到 ${publishedPosts.length} 篇已发布文章`)
+    const { Feed } = await import('feed')
+    const LINK = siteData.siteInfo?.link || BLOG.LINK
+    const AUTHOR = siteData.NOTION_CONFIG?.AUTHOR || BLOG.AUTHOR
 
-    // 使用简化版的 generateRss
-    const feed = await generateRss({
-      NOTION_CONFIG: siteData.NOTION_CONFIG || {},
-      siteInfo: siteData.siteInfo || {
-        title: BLOG.TITLE,
-        description: BLOG.DESCRIPTION,
-        link: BLOG.LINK
-      },
-      latestPosts: publishedPosts
+    const feed = new Feed({
+      title: siteData.siteInfo?.title || BLOG.TITLE || 'Blog',
+      description: siteData.siteInfo?.description || BLOG.DESCRIPTION || '',
+      id: LINK,
+      link: LINK,
+      language: siteData.NOTION_CONFIG?.LANG || BLOG.LANG || 'zh-CN',
+      favicon: LINK + '/favicon.ico',
+      copyright: 'All rights reserved ' + new Date().getFullYear() + ', ' + AUTHOR,
+      author: { name: AUTHOR, link: LINK }
     })
 
-    const atomContent = feed.atom1()
-    console.log('[Atom] Atom内容生成成功')
-    
+    for (const post of posts) {
+      const postLink = LINK + '/' + (post.slug || post.id)
+      feed.addItem({
+        title: post.title,
+        id: postLink,
+        link: postLink,
+        description: post.summary || '',
+        date: new Date(post.publishDay || post.date || Date.now())
+      })
+    }
+
     res.statusCode = 200
-    res.end(atomContent)
-  } catch (error) {
-    console.error('[Atom] Atom生成错误:', error)
-    res.statusCode = 500
-    res.end(`<?xml version="1.0" encoding="UTF-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom">
-  <title>Atom生成失败</title>
-  <subtitle>服务器内部错误</subtitle>
-  <link href="${BLOG.LINK}"/>
-  <id>${BLOG.LINK}</id>
-  <updated>${new Date().toISOString()}</updated>
-</feed>`)
+    res.end(feed.atom1())
+  } catch (err) {
+    console.error('[Atom] 生成失败:', err)
+    res.statusCode = 200
+    res.end(fallbackAtom())
   }
 
   return { props: {} }
+}
+
+function fallbackAtom() {
+  const title = BLOG.TITLE || 'Blog'
+  const desc = BLOG.DESCRIPTION || ''
+  const link = BLOG.LINK || ''
+  return '<?xml version="1.0" encoding="UTF-8"?>' +
+    '<feed xmlns="http://www.w3.org/2005/Atom">' +
+    '<title>' + title + '</title>' +
+    '<subtitle>' + desc + '</subtitle>' +
+    '<link href="' + link + '"/>' +
+    '<id>' + link + '</id>' +
+    '<updated>' + new Date().toISOString() + '</updated>' +
+    '</feed>'
 }
 
 export default function AtomFeed() {

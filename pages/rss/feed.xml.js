@@ -1,92 +1,92 @@
 // pages/rss/feed.xml.js
+//
+// 重要：不要在此文件顶部 import 任何涉及 SiteDataApi / cache_manager / ioredis 的模块！
+// 否则 webpack 静态分析会打包 ioredis → 需要 Node 内置模块 'net' → 构建失败。
+// 所有重量级依赖一律通过 dynamic import() 在运行时加载。
+//
 import BLOG from '@/blog.config'
-import { generateRss } from '@/lib/utils/rss'
 import { extractLangId } from '@/lib/utils/pageId'
 
-export const getServerSideProps = async ({ req, res }) => {
-  // 设置缓存头
+export const getServerSideProps = async ({ res }) => {
+  res.setHeader('Content-Type', 'application/rss+xml; charset=utf-8')
   res.setHeader(
     'Cache-Control',
-    'public, max-age=3600, stale-while-revalidate=59'
+    'public, s-maxage=7200, stale-while-revalidate=3600'
   )
-  
-  // 设置内容类型为XML
-  res.setHeader('Content-Type', 'application/rss+xml; charset=utf-8')
 
   try {
-    // 获取所有站点数据
     const siteIds = BLOG.NOTION_PAGE_ID.split(',')
-    const siteId = siteIds[0] // 使用第一个站点
-    const id = extractLangId(siteId)
-    
-    console.log('[RSS] 开始获取站点数据...')
-    
-    // 使用 dynamic import 避免在编译时引入可能导致问题的依赖
-    const { getGlobalData } = await import('@/lib/db/getSiteData')
-    
-    const siteData = await getGlobalData({
+    const id = extractLangId(siteIds[0])
+
+    // ---- 动态导入，切断 webpack 静态分析链 ----
+    const { fetchGlobalAllData } = await import('@/lib/db/SiteDataApi')
+    const siteData = await fetchGlobalAllData({
       pageId: id,
-      from: 'rss-feed',
-      // 避免加载完整文章内容，减少依赖
-      simplifySiteData: true
+      from: 'rss-feed'
     })
 
     if (!siteData) {
-      console.error('[RSS] 无法获取站点数据')
-      res.statusCode = 500
-      res.end('Unable to fetch site data')
+      res.statusCode = 200
+      res.end(fallbackRss())
       return { props: {} }
     }
 
-    // 过滤出已发布的文章，获取最新的20篇
-    const allPages = siteData.allPages || []
-    const publishedPosts = allPages
-      .filter(post => 
-        post && 
-        post.status === BLOG.NOTION_PROPERTY_NAME.status_publish &&
-        post.type === BLOG.NOTION_PROPERTY_NAME.type_post &&
-        post.title
+    // 过滤已发布文章，取最新 20 篇
+    const posts = (siteData.allPages || [])
+      .filter(
+        p => p && p.status === 'Published' && p.type === 'Post' && p.title
       )
-      .sort((a, b) => new Date(b.publishDay || b.date) - new Date(a.publishDay || a.date))
+      .sort(
+        (a, b) =>
+          new Date(b.publishDay || b.date) - new Date(a.publishDay || a.date)
+      )
       .slice(0, 20)
 
-    console.log(`[RSS] 找到 ${publishedPosts.length} 篇已发布文章`)
+    const { Feed } = await import('feed')
+    const LINK = siteData.siteInfo?.link || BLOG.LINK
+    const AUTHOR = siteData.NOTION_CONFIG?.AUTHOR || BLOG.AUTHOR
 
-    if (publishedPosts.length === 0) {
-      console.warn('[RSS] 没有找到已发布的文章')
-      // 即使没有文章也生成空的RSS
-    }
-
-    // 使用简化版的 generateRss
-    const feed = await generateRss({
-      NOTION_CONFIG: siteData.NOTION_CONFIG || {},
-      siteInfo: siteData.siteInfo || {
-        title: BLOG.TITLE,
-        description: BLOG.DESCRIPTION,
-        link: BLOG.LINK
-      },
-      latestPosts: publishedPosts
+    const feed = new Feed({
+      title: siteData.siteInfo?.title || BLOG.TITLE || 'Blog',
+      description: siteData.siteInfo?.description || BLOG.DESCRIPTION || '',
+      id: LINK,
+      link: LINK,
+      language: siteData.NOTION_CONFIG?.LANG || BLOG.LANG || 'zh-CN',
+      favicon: `${LINK}/favicon.ico`,
+      copyright: `All rights reserved ${new Date().getFullYear()}, ${AUTHOR}`,
+      author: { name: AUTHOR, link: LINK }
     })
 
-    const rssContent = feed.rss2()
-    console.log('[RSS] RSS内容生成成功')
-    
+    for (const post of posts) {
+      feed.addItem({
+        title: post.title,
+        id: `${LINK}/${post.slug || post.id}`,
+        link: `${LINK}/${post.slug || post.id}`,
+        description: post.summary || '',
+        date: new Date(post.publishDay || post.date || Date.now())
+      })
+    }
+
     res.statusCode = 200
-    res.end(rssContent)
-  } catch (error) {
-    console.error('[RSS] RSS生成错误:', error)
-    res.statusCode = 500
-    res.end(`<?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0">
-  <channel>
-    <title>RSS生成失败</title>
-    <description>服务器内部错误</description>
-    <link>${BLOG.LINK}</link>
-  </channel>
-</rss>`)
+    res.end(feed.rss2())
+  } catch (err) {
+    console.error('[RSS] 生成失败:', err)
+    res.statusCode = 200
+    res.end(fallbackRss())
   }
 
   return { props: {} }
+}
+
+function fallbackRss() {
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>${BLOG.TITLE || 'Blog'}</title>
+    <link>${BLOG.LINK || ''}</link>
+    <description>${BLOG.DESCRIPTION || ''}</description>
+  </channel>
+</rss>`
 }
 
 export default function RSSFeed() {
